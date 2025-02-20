@@ -7,6 +7,8 @@ from datetime import datetime
 
 load_dotenv()
 
+railway_key = os.getenv("MY_RAILWAY_KEY")
+
 def get_data():
     url = "https://fastestlaps.com/tracks/nordschleife"
     response = requests.get(url)
@@ -63,6 +65,12 @@ def get_car_links():
 def get_car_specs(car_links):
     data = []
 
+    acceleration_keys = [
+        "Top speed", "Car type", "Curb weight", "Est. max acceleration", "0 - 40 kph", "0 - 50 kph", "0 - 60 kph",
+        "0 - 80 kph", "0 - 100 kph", "0 - 120 kph",
+        "0 - 130 kph", "0 - 140 kph"
+    ]
+
     for src in car_links:
         url = src[1]  
         response = requests.get(url, timeout=10)  
@@ -70,44 +78,35 @@ def get_car_specs(car_links):
 
         specs = soup.find_all("table", class_="table fl-datasheet")
 
+        car_info = {}
+
         for table in specs:
             rows = table.find_all("tr")
 
-            car_info = []
             for row in rows:
                 cols = row.find_all("td")
 
-                for col in cols:
-                    span = col.find("span")
-                    if span:
-                        car_info.append(span.get_text(strip=True))
+                if len(cols) >= 2:
+                    key = cols[0].get_text(strip=True)
+                    value = cols[1].get_text(strip=True)
 
-                        if len(car_info) >= 36:
-                            weight = car_info[0]
-                            fuel_consumption = car_info[1]
-                            emissions = car_info[2]
-                            zero_100kph = car_info[3]
-                            zero_200kph = car_info[4]
-                            zero_300kph = car_info[5]
-                            hundred_200kph = car_info[7]
-                            two_hundred_300kph = car_info[9]
-                            estimated_quarter_mile = car_info[15]
-                            estimated_half_mile = car_info[17]
-                            top_speed = car_info[19]
-                            max_acceleration = car_info[21]
-                            engine_capacity = car_info[22]
-                            power_output = car_info[23]
-                            torque = car_info[30]
-                            price_eur = car_info[34]
-                            price_usd = car_info[35]
+                    car_info[key] = value
 
-                            data.append((
-                            weight, fuel_consumption, emissions, zero_100kph, zero_200kph, zero_300kph,
-                            hundred_200kph, two_hundred_300kph, estimated_quarter_mile, estimated_half_mile,
-                            top_speed, max_acceleration, engine_capacity, power_output, torque,
-                            price_eur, price_usd
-                            ))
+
+        acceleration_data = {}
+        for key in acceleration_keys:
+            if key in car_info:
+                acceleration_data[key] = car_info[key]
+
+            else:
+                acceleration_data[key] = "N/A"
+
+
+        if acceleration_data:
+            data.append(acceleration_data)
+
     return data
+
 
 car_links = get_car_links()
 print("Car Links:", car_links)
@@ -115,13 +114,11 @@ print("Car Links:", car_links)
 car_specs = get_car_specs(car_links)
 print("Car Specs:", car_specs)
 
+#def save_to_database():
 
+#conn = psycopg2.connect(MY_RAILWAY_KEY)
+#cursor = conn.cursor()
 
-
-
-
-
-
-
-
+#cursor.execute('''CREATE TABLE IF DOES NOT EXSIST car_info (
+#) '''
 
