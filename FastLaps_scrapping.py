@@ -107,20 +107,20 @@ def get_car_specs(car_links):
 
     return data
 
-def clean_data(fast_laps, car_specs):
 
+def clean_data(fast_laps, car_specs):
+    
     fast_laps_df = pd.DataFrame(fast_laps, columns=["car", "driver", "lap_time", "power_weight"])
     car_specs_df = pd.DataFrame(car_specs, columns=[
-        "top_speed", "car_type", "curb_weight", "est_max_acceleration", 
-        "acceleration_0_40", "acceleration_0_50", "acceleration_0_60", 
-        "acceleration_0_80", "acceleration_0_100", "acceleration_0_120", 
-        "acceleration_0_130", "acceleration_0_140"
+        "Top speed", "Car type", "Curb weight", "Est. max acceleration", "0 - 40 kph", "0 - 50 kph", "0 - 60 kph",
+        "0 - 80 kph", "0 - 100 kph", "0 - 120 kph",
+        "0 - 130 kph", "0 - 140 kph"
     ])
 
     acceleration_cols = [
-        "acceleration_0_40", "acceleration_0_50", "acceleration_0_60",
-        "acceleration_0_80", "acceleration_0_100", "acceleration_0_120",
-        "acceleration_0_130", "acceleration_0_140"
+        "0 - 40 kph", "0 - 50 kph", "0 - 60 kph",
+        "0 - 80 kph", "0 - 100 kph", "0 - 120 kph",
+        "0 - 130 kph", "0 - 140 kph"
     ]
 
     car_specs_df[acceleration_cols] = (
@@ -131,8 +131,7 @@ def clean_data(fast_laps, car_specs):
         .apply(pd.to_numeric, errors="coerce")
     )
 
-    fast_laps_df["lap_time"] = fast_laps_df["lap_time"].replace({"None": None, "": None})
-    fast_laps_df.dropna(subset=["lap_time"], inplace=True)     
+    fast_laps_df["lap_time"] = fast_laps_df["lap_time"].replace({"None": None, "": None})    
     fast_laps_df["lap_time"] = pd.to_timedelta("00:" + fast_laps_df["lap_time"])
 
     fast_laps_df["lap_time"] = fast_laps_df["lap_time"].apply(lambda x: str(x))
@@ -147,8 +146,6 @@ def clean_data(fast_laps, car_specs):
             else None
         )
     )
-
-    print(fast_laps_df["power_weight"].head())
  
     return fast_laps_df, car_specs_df
 
@@ -159,9 +156,8 @@ def save_to_database(fast_laps_df, car_specs_df, railway_key):
         cursor = conn.cursor()
         engine = create_engine(railway_key)
 
-        cursor.execute('''DROP TABLE IF EXISTS car_info CASCADE''')
-        cursor.execute('''DROP TABLE IF EXISTS car_specs CASCADE''')
-
+        cursor.execute("DROP TABLE IF EXISTS car_info CASCADE")
+        cursor.execute("DROP TABLE IF EXISTS car_specs CASCADE")
 
         cursor.execute('''CREATE TABLE IF NOT EXISTS car_info (
             id SERIAL PRIMARY KEY,
@@ -169,29 +165,46 @@ def save_to_database(fast_laps_df, car_specs_df, railway_key):
             driver VARCHAR(255),
             lap_time TEXT,
             power_weight FLOAT
-            )''')
+        )''')
 
         cursor.execute('''CREATE TABLE IF NOT EXISTS car_specs (
             id SERIAL PRIMARY KEY,
-            top_speed FLOAT,
-            car_type VARCHAR(255),
-            curb_weight FLOAT,
-            est_max_acceleration FLOAT,
-            acceleration_0_40 FLOAT,
-            acceleration_0_50 FLOAT,
-            acceleration_0_60 FLOAT,
-            acceleration_0_80 FLOAT,
-            acceleration_0_100 FLOAT,
-            acceleration_0_120 FLOAT,
-            acceleration_0_130 FLOAT,
-            acceleration_0_140 FLOAT
-            )''')
+            "Top speed" TEXT, 
+            "Car type" TEXT, 
+            "Curb weight" TEXT, 
+            "Est. max acceleration" TEXT, 
+            "0 - 40 kph" TEXT, 
+            "0 - 50 kph" TEXT, 
+            "0 - 60 kph" TEXT,
+            "0 - 80 kph" TEXT, 
+            "0 - 100 kph" TEXT, 
+            "0 - 120 kph" TEXT,
+            "0 - 130 kph" TEXT, 
+            "0 - 140 kph" TEXT
+        )''')
 
-        fast_laps_df.to_sql("car_info", engine, if_exists = "append", index = False, chunksize=5000)
-        car_specs_df.to_sql("car_specs", engine, if_exists="append", index = False, chunksize=5000)
+
+        fast_laps_records = fast_laps_df.to_records(index=False).tolist()
+        car_specs_records = car_specs_df.to_records(index=False).tolist()
+
+
+        if fast_laps_records:
+            insert_query = '''INSERT INTO car_info (car, driver, lap_time, power_weight) 
+                              VALUES (%s, %s, %s, %s)'''
+            cursor.executemany(insert_query, fast_laps_records)
+        
+
+        if car_specs_records:
+            insert_query = '''INSERT INTO car_specs ("Top speed", "Car type", "Curb weight", 
+                                                     "Est. max acceleration", "0 - 40 kph", 
+                                                     "0 - 50 kph", "0 - 60 kph", "0 - 80 kph", 
+                                                     "0 - 100 kph", "0 - 120 kph", 
+                                                     "0 - 130 kph", "0 - 140 kph") 
+                              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+            cursor.executemany(insert_query, car_specs_records)
 
         conn.commit()
-        print("data saved")
+        print("Data saved successfully!")
 
     except Exception as e:
         print(f"Data did not save. Error: {e}")
