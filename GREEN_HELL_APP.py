@@ -60,4 +60,6 @@ st.write("### Car Details:")
 st.write(cars_df[cars_df["car"] == selected_car])
 st.write(ai_response)
 
+st.sidebar.header("Performance Metrics")
+
 
