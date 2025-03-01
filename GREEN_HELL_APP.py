@@ -62,4 +62,9 @@ st.write(ai_response)
 
 st.sidebar.header("Performance Metrics")
 
+selected_view = st.sidebar.radio(
+    "Select an option:",
+    ["AI Prediction", "📊 Power vs. Acceleration", "📊 Top Speed vs. Curb Weight", "🏎️ 3D Modeled Track Performance"]
+)
+
 
