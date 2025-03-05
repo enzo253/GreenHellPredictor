@@ -119,6 +119,14 @@ car_specs_acceleration = car_specs[acceleration_features].dropna(axis=1)
 car_specs_acceleration_long = car_specs_acceleration.transpose().reset_index()
 car_specs_acceleration_long.columns = ['Speed (kph)', 'Acceleration Time (seconds)']
 
+numeric_columns = ['Top speed', 'Curb weight', 'Power']
+
+performance_values = car_specs[numeric_columns].values.flatten()
+labels = numeric_columns
+
+streamlit_bg_color = st.get_option("theme.backgroundColor")
+
+
 if selected_view == "📊 Performance Analysis":
     if not car_specs.empty:
         fig = px.scatter_3d(
@@ -133,16 +141,16 @@ if selected_view == "📊 Performance Analysis":
         )
         st.plotly_chart(fig)
 
-        fig1 = px.scatter(
-        car_specs, 
-        x='power_weight', 
-        y='Est. max acceleration', 
-        color='car', 
-        size='Curb weight', 
-        hover_data=['car', 'power_weight', 'Est. max acceleration', 'Top speed'],
-        title=f"Power Weight vs Est. Max Acceleration for {selected_car_name}"
+        fig_speed_vs_power = px.scatter(
+        car_specs,
+        x="Power",
+        y="0 - 100 kph",  # You can change the speed metric if you want
+        color="car",
+        size="power_weight",
+        hover_data=["car", "Top speed"],
+        title=f"Power vs Speed for {selected_car_name}"
         )
-        st.plotly_chart(fig1)
+        st.plotly_chart(fig_speed_vs_power)
 
         fig3 = px.line(
         car_specs_acceleration_long,
@@ -153,9 +161,39 @@ if selected_view == "📊 Performance Analysis":
         )
 
         st.plotly_chart(fig3)
+
+        fig_radar = px.line_polar(
+        r=performance_values,
+        theta=labels,
+        line_close=True,
+        title=f"Performance Radar Chart for {selected_car_name}"
+        )
+
+        fig_radar.update_layout(
+            polar=dict(
+            bgcolor="black",
+                radialaxis=dict(
+                    visible=True,
+                    color='white', 
+                    showticklabels=True,  
+                    tickfont=dict(color='white')  
+                ),
+                angularaxis=dict(
+                    visible=True,
+                    color='white',
+                    showticklabels=True,
+                    tickfont=dict(color='white') 
+                )
+            ),
+            plot_bgcolor=streamlit_bg_color,
+            paper_bgcolor=streamlit_bg_color,  
+            title_font=dict(color='white'), 
+            font=dict(color='white')  
+        )
+
+        fig_radar.update_traces(fillcolor=streamlit_bg_color)
+
+        st.plotly_chart(fig_radar)
+
     else:
         st.error("No data found for the selected car.")
-
-
-
-
