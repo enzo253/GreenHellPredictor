@@ -5,8 +5,7 @@ from bs4 import BeautifulSoup
 import psycopg2
 from datetime import timedelta
 import pandas as pd
-from sqlalchemy import create_engine
-
+from together import Together 
 
 load_dotenv()
 
@@ -38,39 +37,11 @@ def get_data():
 
     return data
 
-BASE_URL = "https://fastestlaps.com"
-
-
-def get_car_links():
-
-    url = BASE_URL + "/tracks/nordschleife"
-    response = requests.get(url)
-
-    soup = BeautifulSoup(response.text, "html.parser")
-
-    rows = soup.find_all("tr")
-    data = []
-
-    for row in rows:
-
-        car_column = row.find_all("td")
-
-        for link in car_column:
-            references = link.find("a")
-
-            if references and references.has_attr("href"):
-                car_name = references.get_text(strip=True)
-                car_links = references.get("href")
-                full_link = BASE_URL + car_links
-                data.append((car_name, full_link))
-
-    return data
-
 def get_car_specs(car_links):
     data = []
 
     acceleration_keys = [
-        "Top speed", "Car type", "Curb weight", "Est. max acceleration", "0 - 40 kph", "0 - 50 kph", "0 - 60 kph",
+        "Top speed", "Car type", "Curb weight", "Power", "Est. max acceleration", "0 - 40 kph", "0 - 50 kph", "0 - 60 kph",
         "0 - 80 kph", "0 - 100 kph", "0 - 120 kph",
         "0 - 130 kph", "0 - 140 kph"
     ]
@@ -107,12 +78,11 @@ def get_car_specs(car_links):
 
     return data
 
-
 def clean_data(fast_laps, car_specs):
     
     fast_laps_df = pd.DataFrame(fast_laps, columns=["car", "driver", "lap_time", "power_weight"])
     car_specs_df = pd.DataFrame(car_specs, columns=[
-        "Top speed", "Car type", "Curb weight", "Est. max acceleration", "0 - 40 kph", "0 - 50 kph", "0 - 60 kph",
+        "Top speed", "Car type", "Curb weight", "Power","Est. max acceleration", "0 - 40 kph", "0 - 50 kph", "0 - 60 kph",
         "0 - 80 kph", "0 - 100 kph", "0 - 120 kph",
         "0 - 130 kph", "0 - 140 kph"
     ])
@@ -146,15 +116,26 @@ def clean_data(fast_laps, car_specs):
             else None
         )
     )
+
+    car_specs_df['Top speed'] = car_specs_df["Top speed"].str.extract(r"(\d+)")
+    car_specs_df["Est. max acceleration"] = car_specs_df["Est. max acceleration"].str.extract(r"(\d+\.\d+)")
+    car_specs_df["Curb weight"] = car_specs_df["Curb weight"].str.extract(r"(\d+)")
+    car_specs_df["Power"] = car_specs_df["Power"].str.extract(r"(\d+)")
+
+    car_specs_df["Est. max acceleration"] = car_specs_df["Est. max acceleration"].astype(float)
+    car_specs_df["Top speed"] = car_specs_df["Top speed"].astype(float)
+    car_specs_df["Curb weight"] = car_specs_df["Curb weight"].astype(float)
+    car_specs_df["Power"] = car_specs_df["Power"].astype(float)
+
+
+    print(car_specs_df.head())
  
     return fast_laps_df, car_specs_df
-
 
 def save_to_database(fast_laps_df, car_specs_df, railway_key):
     try:
         conn = psycopg2.connect(railway_key)
         cursor = conn.cursor()
-        engine = create_engine(railway_key)
 
         cursor.execute("DROP TABLE IF EXISTS car_info CASCADE")
         cursor.execute("DROP TABLE IF EXISTS car_specs CASCADE")
@@ -169,18 +150,19 @@ def save_to_database(fast_laps_df, car_specs_df, railway_key):
 
         cursor.execute('''CREATE TABLE IF NOT EXISTS car_specs (
             id SERIAL PRIMARY KEY,
-            "Top speed" TEXT, 
+            "Top speed" FLOAT, 
             "Car type" TEXT, 
-            "Curb weight" TEXT, 
-            "Est. max acceleration" TEXT, 
-            "0 - 40 kph" TEXT, 
-            "0 - 50 kph" TEXT, 
-            "0 - 60 kph" TEXT,
-            "0 - 80 kph" TEXT, 
-            "0 - 100 kph" TEXT, 
-            "0 - 120 kph" TEXT,
-            "0 - 130 kph" TEXT, 
-            "0 - 140 kph" TEXT
+            "Curb weight" FlOAT,
+            "Power" FLOAT,
+            "Est. max acceleration" FLOAT, 
+            "0 - 40 kph" FLOAT, 
+            "0 - 50 kph" FLOAT, 
+            "0 - 60 kph" FLOAT,
+            "0 - 80 kph" FLOAT, 
+            "0 - 100 kph" FLOAT, 
+            "0 - 120 kph" FLOAT,
+            "0 - 130 kph" FLOAT, 
+            "0 - 140 kph" FLOAT
         )''')
 
 
@@ -195,12 +177,12 @@ def save_to_database(fast_laps_df, car_specs_df, railway_key):
         
 
         if car_specs_records:
-            insert_query = '''INSERT INTO car_specs ("Top speed", "Car type", "Curb weight", 
+            insert_query = '''INSERT INTO car_specs ("Top speed", "Car type", "Curb weight", "Power", 
                                                      "Est. max acceleration", "0 - 40 kph", 
                                                      "0 - 50 kph", "0 - 60 kph", "0 - 80 kph", 
                                                      "0 - 100 kph", "0 - 120 kph", 
                                                      "0 - 130 kph", "0 - 140 kph") 
-                              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+                              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
             cursor.executemany(insert_query, car_specs_records)
 
         conn.commit()
@@ -212,17 +194,14 @@ def save_to_database(fast_laps_df, car_specs_df, railway_key):
     finally:
         conn.close()
 
+cleaned_data = clean_data(fast_laps, car_specs)
 
-fast_laps = get_data()
-print(fast_laps)
-
-car_links = get_car_links()
-print("Car Links:", car_links) 
-
-car_specs = get_car_specs(car_links)
-print("Car Specs:", car_specs)
+print(cleaned_data)
 
 fast_laps_df, car_specs_df = clean_data(fast_laps, car_specs)
+
+print(f"Fast Laps DataFrame size: {fast_laps_df.shape}")
+print(f"Car Specs DataFrame size: {car_specs_df.shape}")
 
 data_saving = save_to_database(fast_laps_df, car_specs_df, railway_key)
 
