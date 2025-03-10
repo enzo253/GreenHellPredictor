@@ -1,71 +1,56 @@
-# Green Hell Predictor
+## Green Hell Predictor
 
-## Overview
-Green Hell Predictor is a Streamlit application designed to predict car performance metrics based on available data. The app utilizes AI models to fill in missing specifications and predict Nürburgring lap times. It also provides interactive visualizations for detailed performance analysis.
+### Overview
+The **Green Hell Predictor** is a powerful web application that predicts car performance and provides in-depth performance analysis based on various car specifications. Leveraging AI, the app can predict missing values in car data and estimate Nürburgring lap times with impressive accuracy.
 
-## Features
-- Select a car to view its specifications.
-- Uses AI to predict missing data fields.
-- Predicts Nürburgring lap times based on car specifications.
-- Interactive visualizations such as 3D scatter plots, radar charts, and heatmaps.
+### Features
+- **AI-Powered Predictions:** Predict missing car performance values and estimate lap times using machine learning models.
+- **Interactive Visualizations:** Explore acceleration curves, 3D performance plots, and correlation heatmaps.
+- **Dynamic UI:** User-friendly interface built with Streamlit for seamless data exploration and insights.
 
-## Installation
+### Live Demo
+🔗 [**Try the Green Hell Predictor**](https://greenhellpredictor.streamlit.app/)
 
-1. Clone this repository:
+### Installation
+To run the project locally, follow these steps:
+1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/green-hell-predictor.git
-   cd green-hell-predictor
+   git clone <repository_link>
+   cd GreenHellPredictor
    ```
-
-2. Install the required dependencies:
+2. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-
-3. Create a `.env` file with the following keys:
-   ```env
-   MY_CAR_KEY=<your_postgres_connection_string>
-   TOGETHER_API=<your_together_ai_key>
+3. Create a `.env` file and include your API keys:
+   ```plaintext
+   MY_CAR_KEY=your_railway_key_here
+   TOGETHER_API=your_together_api_key_here
    ```
-
-4. Run the Streamlit app:
+4. Run the application:
    ```bash
    streamlit run GREEN_HELL_APP.py
    ```
 
-## Requirements
-```
-streamlit
-pandas
-psycopg2
-requests
-together
-plotly
-beautifulsoup4
-dotenv
-```
+### Technologies Used
+- **Python** (Pandas, NumPy, Plotly, Requests)
+- **Streamlit** (For interactive web interface)
+- **PostgreSQL** (For database integration)
+- **Together API** (For AI-based predictions)
 
-## Usage
+### Usage
+1. Select a car from the dropdown menu.
+2. View detailed specifications, including AI-predicted missing values.
+3. Explore visualizations for acceleration, power-to-weight ratio, and more.
+4. Compare car performance metrics via interactive graphs.
 
-1. Select a car from the dropdown menu to view its specifications.
-2. If any data points are missing, the AI will predict and fill them automatically.
-3. Use the sidebar options to toggle between AI predictions and performance analysis.
-4. Interactive graphs like scatter plots, radar charts, and heatmaps provide insight into the car's performance metrics.
+### Future Improvements
+- Enhanced AI model for improved lap time predictions.
+- Expanded dataset with additional car models.
+- Integration of user-uploaded data for customized analysis.
 
-## Challenges Faced
-- **Data Inconsistencies:** Some car data entries contained missing values, which required implementing AI predictions to fill the gaps.
-- **Visualisation Issues:** Creating a seamless radar chart required adjusting background colours and ensuring readability in dark mode.
-- **Large Deployment Size:** The project's size exceeded AWS limits, requiring dependency optimization.
+### License
+This project is licensed under the **MIT License**.
 
-## Future Improvements
-- Enhance AI models for more accurate performance predictions.
-- Expand the dataset to include additional car specifications.
-- Implement caching for improved performance in the Streamlit app.
-
-## License
-This project is licensed under the MIT License.
-
-## Contact
-For any inquiries, please reach out via email at (enzo.wurtele@outlook.com).
-
-
+### Contact
+For questions or contributions, please reach out via GitHub or email.
