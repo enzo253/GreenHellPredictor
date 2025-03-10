@@ -1,86 +1,71 @@
-GREEN HELL PREDICTOR
+# Green Hell Predictor
 
-Overview
+## Overview
+Green Hell Predictor is a Streamlit application designed to predict car performance metrics based on available data. The app utilizes AI models to fill in missing specifications and predict Nürburgring lap times. It also provides interactive visualizations for detailed performance analysis.
 
-The Green Hell Predictor is a data-driven web application designed to predict and analyse car performance metrics, including estimated lap times on the Nürburgring racetrack. The app leverages Python, Streamlit, Plotly, and AI models to fill in missing car specifications and generate insightful visualisations.
+## Features
+- Select a car to view its specifications.
+- Uses AI to predict missing data fields.
+- Predicts Nürburgring lap times based on car specifications.
+- Interactive visualizations such as 3D scatter plots, radar charts, and heatmaps.
 
-Features
+## Installation
 
-Car Specification Analysis: Displays detailed car specifications with AI-generated predictions for missing values.
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/your-username/green-hell-predictor.git
+   cd green-hell-predictor
+   ```
 
-Performance Prediction: Uses AI to predict Nürburgring lap times based on car specs.
+2. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Interactive Visualisations: Includes scatter plots, line charts, radar charts, and heatmaps for performance analysis.
+3. Create a `.env` file with the following keys:
+   ```env
+   MY_CAR_KEY=<your_postgres_connection_string>
+   TOGETHER_API=<your_together_ai_key>
+   ```
 
-Dynamic Data Management: Utilises a PostgreSQL database for efficient data retrieval and storage.
+4. Run the Streamlit app:
+   ```bash
+   streamlit run GREEN_HELL_APP.py
+   ```
 
-Tech Stack
+## Requirements
+```
+streamlit
+pandas
+psycopg2
+requests
+together
+plotly
+beautifulsoup4
+dotenv
+```
 
-Python (Pandas, NumPy, Plotly, Together API, Requests, BeautifulSoup)
+## Usage
 
-Streamlit (For the interactive web interface)
+1. Select a car from the dropdown menu to view its specifications.
+2. If any data points are missing, the AI will predict and fill them automatically.
+3. Use the sidebar options to toggle between AI predictions and performance analysis.
+4. Interactive graphs like scatter plots, radar charts, and heatmaps provide insight into the car's performance metrics.
 
-PostgreSQL (Database management)
+## Challenges Faced
+- **Data Inconsistencies:** Some car data entries contained missing values, which required implementing AI predictions to fill the gaps.
+- **Visualisation Issues:** Creating a seamless radar chart required adjusting background colours and ensuring readability in dark mode.
+- **Large Deployment Size:** The project's size exceeded AWS limits, requiring dependency optimization.
 
-AWS (For deployment)
+## Future Improvements
+- Enhance AI models for more accurate performance predictions.
+- Expand the dataset to include additional car specifications.
+- Implement caching for improved performance in the Streamlit app.
 
-AI Model: Utilises meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo for accurate predictions
+## License
+This project is licensed under the MIT License.
 
-Installation
+## Contact
+For any inquiries, please reach out via email at (enzo.wurtele@outlook.com).
 
-Clone this repository:
 
-git clone <repository-url>
-cd GreenHellPredictor
-
-Install the required dependencies:
-
-pip install -r requirements.txt
-
-Set up your environment variables:
-Create a .env file with the following:
-
-MY_CAR_KEY=<Your Railway Database URL>
-TOGETHER_API=<Your Together AI API Key>
-
-Run the application:
-
-streamlit run GREEN_HELL_APP.py
-
-Usage
-
-Car Selection: Choose a car from the dropdown to view its specifications.
-
-AI Prediction: The app predicts missing values and displays them in the car specifications table.
-
-Performance Analysis: Visualise car performance using dynamic charts, including:
-
-Radar charts for key performance indicators
-
-3D scatter plots for speed, weight, and acceleration
-
-Correlation heatmaps for performance metric relationships
-
-Challenges Faced
-
-Data Imputation: Handling missing car specs by integrating AI models to predict values.
-
-Visualisation Issues: Resolving layout and theme inconsistencies for seamless data presentation.
-
-AWS Deployment: Overcoming package size limitations by optimising dependencies.
-
-Future Improvements
-
-Enhance AI model performance for even more accurate predictions.
-
-Implement additional filters for improved car selection and comparison.
-
-Introduce user authentication to allow saving and tracking favourite car analyses.
-
-Acknowledgements
-
-Special thanks to Together AI for their powerful language model and to the automotive data sources that made this project possible.
-
-Contact
-
-For questions or contributions, feel free to reach out at enzo.wurtele@outlook.com
