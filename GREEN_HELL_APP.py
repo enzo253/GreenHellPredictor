@@ -48,25 +48,27 @@ missing_features = car_specs.columns[car_specs.isnull().any()].tolist()
 
 if missing_features:
     prompt_missing_values = f"""
-    You are an expert in car performance analysis. The following car has missing values (NaN). 
+    You are an expert in car performance analysis with extensive knowledge of automotive specifications.  
 
-    **Task:** Predict only the missing values for these specific features based on the car's available data.  
-    - **Return your response in JSON format** (keys: feature names, values: predicted numbers or "nan").  
-    - **Do not include any explanations or extra text.**  
+    **Task:** Predict the missing values (NaN) for the specified features based on the available car data.  
+    - **Return your response strictly in valid JSON format** (keys: feature names, values: predicted numbers or "nan").  
+    - **If insufficient data prevents a confident prediction, return "nan" for that feature.**  
+    - **Do not include any explanations, comments, or extra text.**  
 
-    Car Specifications:
+    Car Specifications (with available data only):  
     {car_specs.to_json()}
 
     Missing Features:
     {missing_features}
 
-    Expected Output:
+    Example Output:
     {{
         "feature1": value1,
-        "feature2": value2,
-        ...
+        "feature2": "nan",
+        "feature3": value3
     }}
     """
+
 
  
     response = client.chat.completions.create(
@@ -80,8 +82,12 @@ if missing_features:
 
 
         for feature, value in predicted_values.items():
-            if feature in car_specs.columns and pd.isna(car_specs[feature].values[0]):
-                car_specs.at[car_specs.index[0], feature] = float(value) if value != "nan" else None
+
+            if isinstance(value, (int, float)) or str(value).replace('.', '', 1).isdigit():
+                car_specs.at[car_specs.index[0], feature] = float(value)
+        else:
+            car_specs.at[car_specs.index[0], feature] = None
+
     except json.JSONDecodeError:
         st.error("Error: AI response is not in expected JSON format.")
 
@@ -144,7 +150,7 @@ if selected_view == "📊 Performance Analysis":
         fig_speed_vs_power = px.scatter(
         car_specs,
         x="Power",
-        y="0 - 100 kph",  # You can change the speed metric if you want
+        y="0 - 100 kph",
         color="car",
         size="power_weight",
         hover_data=["car", "Top speed"],
