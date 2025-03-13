@@ -36,60 +36,58 @@ st.title("GREEN HELL PREDICTOR")
 st.subheader("CAR SELECTOR")
 
 selected_car_name = st.selectbox("Select Car:", cars_df["car"].unique())
-
 cars_clean_df = cars_df.drop(columns=["car_info_id", "car_specs_id", "lap_time"])
-
 car_specs = cars_clean_df[cars_clean_df["car"] == selected_car_name].copy()
-
 car_specs = car_specs.head(1)
-
 missing_features = car_specs.columns[car_specs.isnull().any()].tolist()
 
 
 if missing_features:
-    prompt_missing_values = f"""
-    You are an expert in car performance analysis with extensive knowledge of automotive specifications.  
+        prompt_missing_values = f"""
+        You are an expert in car performance analysis with extensive knowledge of automotive specifications.  
 
-    **Task:** Predict the missing values (NaN) for the specified features based on the available car data.  
-    - **Return your response strictly in valid JSON format** (keys: feature names, values: predicted numbers or "nan").  
-    - **If insufficient data prevents a confident prediction, return "nan" for that feature.**  
-    - **Do not include any explanations, comments, or extra text.**  
+        **Task:** Predict the missing values (NaN) for the specified features based on the available car data.  
+        - **Return your response strictly in valid JSON format** (keys: feature names, values: predicted numbers or "nan").  
+        - **If insufficient data prevents a confident prediction, return "nan" for that feature.**  
+        - **Do not include any explanations, comments, or extra text.**  
 
-    Car Specifications (with available data only):  
-    {car_specs.to_json()}
+        Car Specifications (with available data only):  
+        {car_specs.to_json()}
 
-    Missing Features:
-    {missing_features}
+        Missing Features:
+        {missing_features}
 
-    Example Output:
-    {{
-        "feature1": value1,
-        "feature2": "nan",
-        "feature3": value3
-    }}
-    """
-
+        Example Output:
+        {{
+            "feature1": value1,
+            "feature2": "nan",
+            "feature3": value3
+        }}
+        """
+ 
+        response = client.chat.completions.create(
+            model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+            messages=[{"role": "user", "content": prompt_missing_values}]
+        )
 
  
-    response = client.chat.completions.create(
-        model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
-        messages=[{"role": "user", "content": prompt_missing_values}]
-    )
-
- 
-    try:
-        predicted_values = json.loads(response.choices[0].message.content)
+        try:
+            predicted_values = json.loads(response.choices[0].message.content)
 
 
-        for feature, value in predicted_values.items():
-
-            if isinstance(value, (int, float)) or str(value).replace('.', '', 1).isdigit():
-                car_specs.at[car_specs.index[0], feature] = float(value)
-        else:
-            car_specs.at[car_specs.index[0], feature] = None
-
-    except json.JSONDecodeError:
-        st.error("Error: AI response is not in expected JSON format.")
+            for feature, value in predicted_values.items():
+                if isinstance(value, (int, float)):  # If it's already numeric, use it
+                    car_specs.at[car_specs.index[0], feature] = float(value)
+                elif isinstance(value, str) and value.strip().lower() == "nan":  # If the value is "nan" (string)
+                    car_specs.at[car_specs.index[0], feature] = None  # Or np.nan
+            else:
+                try:
+                    car_specs.at[car_specs.index[0], feature] = float(value)
+                except ValueError:
+                    car_specs.at[car_specs.index[0], feature] = None
+        
+        except json.JSONDecodeError:
+            st.error("Error: AI response is not in expected JSON format.")
 
 
 st.write(car_specs)
@@ -121,15 +119,12 @@ if selected_view == "AI Prediction":
 acceleration_features = ['0 - 40 kph', '0 - 50 kph', '0 - 60 kph', '0 - 80 kph', '0 - 100 kph', '0 - 120 kph', '0 - 130 kph', '0 - 140 kph']
 car_specs_acceleration = car_specs[acceleration_features].dropna(axis=1)
 
-
 car_specs_acceleration_long = car_specs_acceleration.transpose().reset_index()
 car_specs_acceleration_long.columns = ['Speed (kph)', 'Acceleration Time (seconds)']
 
 numeric_columns = ['Top speed', 'Curb weight', 'Power']
-
 performance_values = car_specs[numeric_columns].values.flatten()
 labels = numeric_columns
-
 streamlit_bg_color = st.get_option("theme.backgroundColor")
 
 
@@ -137,8 +132,6 @@ acceleration_score = 1000 / car_specs[acceleration_features].sum(axis=1).values[
 curb_weight_score = car_specs['Curb weight'].values[0] / 100
 power_score = car_specs['Power'].values[0] / 100
 TopSpeed_score = car_specs['Top speed'].values[0] / 10
-
-
 
 
 if selected_view == "📊 Performance Analysis":
@@ -241,8 +234,6 @@ if selected_view == "Car Comparisons":
             "feature3": value3
         }}
         """
-
-
  
         response_1 = client.chat.completions.create(
             model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
@@ -255,12 +246,16 @@ if selected_view == "Car Comparisons":
 
 
             for feature, value in predicted_values_1.items():
-
-                if isinstance(value, (int, float)) or str(value).replace('.', '', 1).isdigit():
+                if isinstance(value, (int, float)):  # If it's already numeric, use it
                     car_specs_1.at[car_specs_1.index[0], feature] = float(value)
+                elif isinstance(value, str) and value.strip().lower() == "nan":  # If the value is "nan" (string)
+                    car_specs_1.at[car_specs_1.index[0], feature] = None  # Or np.nan
             else:
-                car_specs_1.at[car_specs_1.index[0], feature] = None
-
+                try:
+                    car_specs_1.at[car_specs_1.index[0], feature] = float(value)
+                except ValueError:
+                    car_specs_1.at[car_specs_1.index[0], feature] = None
+        
         except json.JSONDecodeError:
             st.error("Error: AI response is not in expected JSON format.")
 
@@ -295,11 +290,3 @@ if selected_view == "Car Comparisons":
         title="Car Comparison: Performance Scores"
     )
     st.plotly_chart(fig)
-
-
-
-
-
-
-
-
