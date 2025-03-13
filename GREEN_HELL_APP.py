@@ -97,7 +97,7 @@ st.write(car_specs)
 st.sidebar.header("Performance Metrics")
 selected_view = st.sidebar.radio(
     "Select an option:",
-    ["AI Prediction", "📊 Performance Analysis"]
+    ["AI Prediction", "📊 Performance Analysis", "Car Comparisons"]
 )
 
 
@@ -131,6 +131,14 @@ performance_values = car_specs[numeric_columns].values.flatten()
 labels = numeric_columns
 
 streamlit_bg_color = st.get_option("theme.backgroundColor")
+
+
+acceleration_score = 1000 / car_specs[acceleration_features].sum(axis=1).values[0]
+curb_weight_score = car_specs['Curb weight'].values[0] / 100
+power_score = car_specs['Power'].values[0] / 100
+TopSpeed_score = car_specs['Top speed'].values[0] / 10
+
+
 
 
 if selected_view == "📊 Performance Analysis":
@@ -203,3 +211,95 @@ if selected_view == "📊 Performance Analysis":
 
     else:
         st.error("No data found for the selected car.")
+
+if selected_view == "Car Comparisons":
+
+    selected_car_name_1 = st.selectbox("Select Second Car:", cars_df["car"].unique(), key="car_selector_1")
+    car_specs_1 = cars_clean_df[cars_clean_df["car"] == selected_car_name_1].copy()
+    car_specs_1 = car_specs_1.head(1)
+    missing_features_1 = car_specs_1.columns[car_specs_1.isnull().any()].tolist()
+
+    if missing_features_1:
+        prompt_missing_values_1 = f"""
+        You are an expert in car performance analysis with extensive knowledge of automotive specifications.  
+
+        **Task:** Predict the missing values (NaN) for the specified features based on the available car data.  
+        - **Return your response strictly in valid JSON format** (keys: feature names, values: predicted numbers or "nan").  
+        - **If insufficient data prevents a confident prediction, return "nan" for that feature.**  
+        - **Do not include any explanations, comments, or extra text.**  
+
+        Car Specifications (with available data only):  
+        {car_specs_1.to_json()}
+
+        Missing Features:
+        {missing_features_1}
+
+        Example Output:
+        {{
+            "feature1": value1,
+            "feature2": "nan",
+            "feature3": value3
+        }}
+        """
+
+
+ 
+        response_1 = client.chat.completions.create(
+            model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+            messages=[{"role": "user", "content": prompt_missing_values_1}]
+        )
+
+ 
+        try:
+            predicted_values_1 = json.loads(response_1.choices[0].message.content)
+
+
+            for feature, value in predicted_values_1.items():
+
+                if isinstance(value, (int, float)) or str(value).replace('.', '', 1).isdigit():
+                    car_specs_1.at[car_specs_1.index[0], feature] = float(value)
+            else:
+                car_specs_1.at[car_specs_1.index[0], feature] = None
+
+        except json.JSONDecodeError:
+            st.error("Error: AI response is not in expected JSON format.")
+
+    st.write(car_specs_1)
+
+    acceleration_score_1 = 1000 / car_specs_1[acceleration_features].sum(axis=1).values[0]
+    curb_weight_score_1 = car_specs_1['Curb weight'].values[0] / 100
+    power_score_1 = car_specs_1['Power'].values[0] / 100
+    TopSpeed_score_1 = car_specs_1['Top speed'].values[0] / 10
+
+
+    car_specs_score_01 = pd.DataFrame({
+        'Metric': ['acceleration score', 'curb weight score', 'power score', 'top speed score'],
+        'Score': [acceleration_score_1, curb_weight_score_1, power_score_1, TopSpeed_score_1],
+        'car': selected_car_name_1
+    })
+
+    car_specs_score_02 = pd.DataFrame({
+        'Metric': ['acceleration score', 'curb weight score', 'power score', 'top speed score'],
+        'Score': [acceleration_score, curb_weight_score, power_score, TopSpeed_score],
+        'car': selected_car_name
+    })
+
+    combined_scores = pd.concat([car_specs_score_01, car_specs_score_02], axis=0)
+
+    fig = px.bar(
+        combined_scores, 
+        x='Metric', 
+        y='Score', 
+        color='car',
+        barmode='group',
+        title="Car Comparison: Performance Scores"
+    )
+    st.plotly_chart(fig)
+
+
+
+
+
+
+
+
