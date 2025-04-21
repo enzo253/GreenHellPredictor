@@ -218,26 +218,32 @@ if selected_view == "Car Comparisons":
     car_specs_1 = car_specs_1.head(1)
     missing_features_1 = car_specs_1.columns[car_specs_1.isnull().any()].tolist()
 
-    if missing_features_1:
-        prompt_missing_values_1 = f"""
-        You are an expert in car performance analysis with extensive knowledge of automotive specifications.  
+    if missing_features: 
+        prompt_missing_values = f"""
+        You are a senior automotive analyst specializing in car performance and specifications.
 
-        **Task:** Predict the missing values (NaN) for the specified features based on the available car data.  
-        - **Return your response strictly in valid JSON format** (keys: feature names, values: predicted numbers or "nan").  
-        - **If insufficient data prevents a confident prediction, return "nan" for that feature.**  
-        - **Do not include any explanations, comments, or extra text.**  
+        **Task:** Predict the missing values (NaN) for the specified features using the provided car data.
 
-        Car Specifications (with available data only):  
-        {car_specs_1.to_json()}
+        **Instructions:**  
+        - You MUST return a **valid JSON object ONLY**, without any extra text, explanations, or formatting.
+        - The JSON must have:
+        - **Keys** = feature names  
+        - **Values** = predicted numbers (float or int) or the string "nan"
+        - If there is not enough information to predict a value confidently, set it to "nan".
+        - **Do not add any extra text before or after the JSON.**  
+        - **Do not format output as markdown, code blocks, or natural language. Only raw JSON.**
 
-        Missing Features:
-        {missing_features_1}
+        **Available Car Data:**  
+        {car_specs.to_json()}
 
-        Example Output:
+        **Missing Features:**  
+        {missing_features}
+
+        **Strict Output Example:**
         {{
-            "feature1": value1,
-            "feature2": "nan",
-            "feature3": value3
+        "feature1": 123.4,
+        "feature2": "nan",
+        "feature3": 567
         }}
         """
  
