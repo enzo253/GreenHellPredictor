@@ -52,8 +52,10 @@ if missing_features:
     - You MUST return a **valid JSON object ONLY**, without any extra text, explanations, or formatting.
     - The JSON must have:
         - **Keys** = feature names  
-        - **Values** = predicted numbers (float or int) or the string "nan"
-    - If there is not enough information to predict a value confidently, set it to "nan".
+        - **Values** = predicted numbers (float or int).
+    - **You must fill EVERY missing feature with a predicted numerical value.**  
+    - **Do not return "nan" under any circumstances.**
+    - If information is insufficient, **make the best reasonable numerical estimate based on available data and general automotive knowledge.**
     - **Do not add any extra text before or after the JSON.**  
     - **Do not format output as markdown, code blocks, or natural language. Only raw JSON.**
 
@@ -66,7 +68,7 @@ if missing_features:
     **Strict Output Example:**
     {{
       "feature1": 123.4,
-      "feature2": "nan",
+      "feature2": 85.0,
       "feature3": 567
     }}
     """
@@ -219,7 +221,7 @@ if selected_view == "Car Comparisons":
     missing_features_1 = car_specs_1.columns[car_specs_1.isnull().any()].tolist()
 
     if missing_features: 
-        prompt_missing_values = f"""
+        prompt_missing_values_1 = f"""
         You are a senior automotive analyst specializing in car performance and specifications.
 
         **Task:** Predict the missing values (NaN) for the specified features using the provided car data.
@@ -228,24 +230,26 @@ if selected_view == "Car Comparisons":
         - You MUST return a **valid JSON object ONLY**, without any extra text, explanations, or formatting.
         - The JSON must have:
         - **Keys** = feature names  
-        - **Values** = predicted numbers (float or int) or the string "nan"
-        - If there is not enough information to predict a value confidently, set it to "nan".
+        - **Values** = predicted numbers (float or int).
+        - **You must fill EVERY missing feature with a predicted numerical value.**  
+        - **Do not return "nan" under any circumstances.**
+        - If information is insufficient, **make the best reasonable numerical estimate based on available data and general automotive knowledge.**
         - **Do not add any extra text before or after the JSON.**  
         - **Do not format output as markdown, code blocks, or natural language. Only raw JSON.**
 
-        **Available Car Data:**  
-        {car_specs.to_json()}
+    **Available Car Data:**  
+    {car_specs_1.to_json()}
 
-        **Missing Features:**  
-        {missing_features}
+    **Missing Features:**  
+    {missing_features_1}
 
-        **Strict Output Example:**
-        {{
-        "feature1": 123.4,
-        "feature2": "nan",
-        "feature3": 567
-        }}
-        """
+    **Strict Output Example:**
+    {{
+      "feature1": 123.4,
+      "feature2": 85.0,
+      "feature3": 567
+    }}
+    """
  
         response_1 = client.chat.completions.create(
             model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
