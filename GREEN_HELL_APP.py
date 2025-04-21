@@ -43,42 +43,48 @@ missing_features = car_specs.columns[car_specs.isnull().any()].tolist()
 
 
 if missing_features:
-        prompt_missing_values = f"""
-        You are an expert in car performance analysis with extensive knowledge of automotive specifications.  
+    prompt_missing_values = f"""
+    You are a senior automotive analyst specializing in car performance and specifications.
 
-        **Task:** Predict the missing values (NaN) for the specified features based on the available car data.  
-        - **Return your response strictly in valid JSON format** (keys: feature names, values: predicted numbers or "nan").  
-        - **If insufficient data prevents a confident prediction, return "nan" for that feature.**  
-        - **Do not include any explanations, comments, or extra text.**  
+    **Task:** Predict the missing values (NaN) for the specified features using the provided car data.
 
-        Car Specifications (with available data only):  
-        {car_specs.to_json()}
+    **Instructions:**  
+    - You MUST return a **valid JSON object ONLY**, without any extra text, explanations, or formatting.
+    - The JSON must have:
+        - **Keys** = feature names  
+        - **Values** = predicted numbers (float or int) or the string "nan"
+    - If there is not enough information to predict a value confidently, set it to "nan".
+    - **Do not add any extra text before or after the JSON.**  
+    - **Do not format output as markdown, code blocks, or natural language. Only raw JSON.**
 
-        Missing Features:
-        {missing_features}
+    **Available Car Data:**  
+    {car_specs.to_json()}
 
-        Example Output:
-        {{
-            "feature1": value1,
-            "feature2": "nan",
-            "feature3": value3
-        }}
-        """
+    **Missing Features:**  
+    {missing_features}
+
+    **Strict Output Example:**
+    {{
+      "feature1": 123.4,
+      "feature2": "nan",
+      "feature3": 567
+    }}
+    """
  
-        response = client.chat.completions.create(
+    response = client.chat.completions.create(
             model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
             messages=[{"role": "user", "content": prompt_missing_values}]
         )
 
  
-        try:
-            predicted_values = json.loads(response.choices[0].message.content)
+    try:
+        predicted_values = json.loads(response.choices[0].message.content)
 
 
-            for feature, value in predicted_values.items():
-                if isinstance(value, (int, float)):  # If it's already numeric, use it
+        for feature, value in predicted_values.items():
+            if isinstance(value, (int, float)):  # If it's already numeric, use it
                     car_specs.at[car_specs.index[0], feature] = float(value)
-                elif isinstance(value, str) and value.strip().lower() == "nan":  # If the value is "nan" (string)
+            elif isinstance(value, str) and value.strip().lower() == "nan":  # If the value is "nan" (string)
                     car_specs.at[car_specs.index[0], feature] = None  # Or np.nan
             else:
                 try:
@@ -86,8 +92,8 @@ if missing_features:
                 except ValueError:
                     car_specs.at[car_specs.index[0], feature] = None
         
-        except json.JSONDecodeError:
-            st.error("Error: AI response is not in expected JSON format.")
+    except json.JSONDecodeError:
+        st.error("Error: AI response is not in expected JSON format.")
 
 
 st.write(car_specs)
