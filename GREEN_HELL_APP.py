@@ -68,19 +68,17 @@ if missing_features:
     {missing_features}
     """
  
-    response = client.chat.completions.create(
-    model="MiniMaxAI/MiniMax-M2.7",
+    response_0 = client.chat.completions.create(
+    model="Qwen/Qwen2.5-7B-Instruct-Turbo",
     messages=[
         {"role": "system", "content": "Return ONLY valid JSON. No extra text."},
         {"role": "user", "content": prompt_missing_values}
     ],
-    temperature=0.0,
-    max_tokens=500
-)
+    )
 
  
     try:
-        predicted_values = json.loads(response.choices[0].message.content)
+        predicted_values = json.loads(response_0.choices[0].message.content)
 
 
         for feature, value in predicted_values.items():
@@ -115,12 +113,12 @@ if selected_view == "AI Prediction":
     Predict the Nürburgring lap time and other key performance characteristics of the car, excluding any historical lap times.
     """
 
-    response = client.chat.completions.create(
-        model="MiniMaxAI/MiniMax-M2.7",
+    response_1 = client.chat.completions.create(
+        model="Qwen/Qwen2.5-7B-Instruct-Turbo",
         messages=[{"role": "user", "content": prompt_ai_prediction}]
     )
 
-    ai_response = response.choices[0].message.content
+    ai_response = response_1.choices[0].message.content
     st.write("### Car Details:")
     st.write(ai_response)
 
