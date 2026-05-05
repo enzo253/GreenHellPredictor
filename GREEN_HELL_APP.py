@@ -74,7 +74,7 @@ if missing_features:
     """
  
     response = client.chat.completions.create(
-            model="mistralai/Mixtral-8x7B-Instruct-v0.1",
+            model="deepseek-ai/DeepSeek-V4-Pro",
             messages=[{"role": "user", "content": prompt_missing_values}]
         )
 
@@ -116,7 +116,7 @@ if selected_view == "AI Prediction":
     """
 
     response = client.chat.completions.create(
-        model="mistralai/Mixtral-8x7B-Instruct-v0.1",
+        model="deepseek-ai/DeepSeek-V4-Pro",
         messages=[{"role": "user", "content": prompt_ai_prediction}]
     )
 
