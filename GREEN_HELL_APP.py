@@ -69,7 +69,7 @@ if missing_features:
     """
  
     response = client.chat.completions.create(
-    model="deepseek-ai/DeepSeek-V4-Pro",
+    model="MiniMaxAI/MiniMax-M2.7",
     messages=[
         {"role": "system", "content": "Return ONLY valid JSON. No extra text."},
         {"role": "user", "content": prompt_missing_values}
@@ -116,7 +116,7 @@ if selected_view == "AI Prediction":
     """
 
     response = client.chat.completions.create(
-        model="deepseek-ai/DeepSeek-V4-Pro",
+        model="MiniMaxAI/MiniMax-M2.7",
         messages=[{"role": "user", "content": prompt_ai_prediction}]
     )
 
