@@ -74,7 +74,7 @@ if missing_features:
     """
  
     response = client.chat.completions.create(
-            model="meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+            model="mistralai/Mixtral-8x7B-Instruct-v0.1",
             messages=[{"role": "user", "content": prompt_missing_values}]
         )
 
@@ -116,7 +116,7 @@ if selected_view == "AI Prediction":
     """
 
     response = client.chat.completions.create(
-        model="meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+        model="mistralai/Mixtral-8x7B-Instruct-v0.1",
         messages=[{"role": "user", "content": prompt_ai_prediction}]
     )
 
