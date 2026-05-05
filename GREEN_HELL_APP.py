@@ -4,7 +4,7 @@ import psycopg2
 import os 
 from dotenv import load_dotenv
 import requests
-from together import Together 
+from together import Together
 import plotly.express as px
 import json
 
@@ -74,7 +74,7 @@ if missing_features:
     """
  
     response = client.chat.completions.create(
-            model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+            model="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
             messages=[{"role": "user", "content": prompt_missing_values}]
         )
 
