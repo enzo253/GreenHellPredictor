@@ -80,8 +80,7 @@ if missing_features:
 
  
     try:
-        raw = response.choices[0].message.content
-        predicted_values = extract_json(raw)
+        predicted_values = json.loads(response.choices[0].message.content)
 
 
         for feature, value in predicted_values.items():
