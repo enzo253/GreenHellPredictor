@@ -116,7 +116,7 @@ if selected_view == "AI Prediction":
     """
 
     response = client.chat.completions.create(
-        model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+        model="meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
         messages=[{"role": "user", "content": prompt_ai_prediction}]
     )
 
