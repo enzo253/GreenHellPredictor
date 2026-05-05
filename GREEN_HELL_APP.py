@@ -51,8 +51,8 @@ if missing_features:
     **Instructions:**  
     - You MUST return a **valid JSON object ONLY**, without any extra text, explanations, or formatting.
     - The JSON must have:
-        - **Keys** = feature names  
-        - **Values** = predicted numbers (float or int).
+    - **Keys** = feature names  
+    - **Values** = predicted numbers (float or int).
     - **You must fill EVERY missing feature with a predicted numerical value.**  
     - **Do not return "nan" under any circumstances.**
     - If information is insufficient, **make the best reasonable numerical estimate based on available data and general automotive knowledge.**
@@ -223,7 +223,7 @@ if selected_view == "Car Comparisons":
     car_specs_1 = car_specs_1.head(1)
     missing_features_1 = car_specs_1.columns[car_specs_1.isnull().any()].tolist()
 
-    if missing_features: 
+    if missing_features_1: 
         prompt_missing_values_1 = f"""
         You are a senior automotive analyst specializing in car performance and specifications.
 
@@ -255,7 +255,7 @@ if selected_view == "Car Comparisons":
     """
  
         response_1 = client.chat.completions.create(
-            model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+            model="Qwen/Qwen2.5-7B-Instruct-Turbo",
             messages=[{"role": "user", "content": prompt_missing_values_1}]
         )
 
