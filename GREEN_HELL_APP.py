@@ -1,12 +1,12 @@
 import streamlit as st
 import pandas as pd
 import psycopg2
-import os
+import os 
 from dotenv import load_dotenv
+import requests
 from together import Together
 import plotly.express as px
 import json
-import re
 
 load_dotenv()
 
@@ -15,203 +15,293 @@ together_key = os.getenv("TOGETHER_API")
 
 client = Together(api_key=together_key)
 
-# ----------------------------
-# SAFE JSON PARSER
-# ----------------------------
-def safe_json_load(text):
-    try:
-        return json.loads(text)
-    except:
-        match = re.search(r"\{.*\}", text, re.DOTALL)
-        if match:
-            return json.loads(match.group(0))
-        raise ValueError("Invalid JSON from model")
 
-
-# ----------------------------
-# DB LOAD
-# ----------------------------
 conn = psycopg2.connect(railway_key)
 cursor = conn.cursor()
 
-cursor.execute("""
+cursor.execute('''
     SELECT * FROM car_info
     JOIN car_specs ON car_info.id = car_specs.id
-""")
-
+''')
 info = cursor.fetchall()
 conn.close()
 
-cars_df = pd.DataFrame(info, columns=[
-    "car_info_id", "car", "driver", "lap_time", "power_weight",
-    "car_specs_id","Top speed", "Car type", "Curb weight", "Power",
-    "Est. max acceleration","0 - 40 kph", "0 - 50 kph", "0 - 60 kph",
-    "0 - 80 kph","0 - 100 kph", "0 - 120 kph", "0 - 130 kph",
-    "0 - 140 kph"
-])
 
-# FORCE NUMERIC
-numeric_cols = [
-    "Top speed", "Curb weight", "Power", "Est. max acceleration",
-    "0 - 40 kph","0 - 50 kph","0 - 60 kph","0 - 80 kph",
-    "0 - 100 kph","0 - 120 kph","0 - 130 kph","0 - 140 kph"
-]
-cars_df[numeric_cols] = cars_df[numeric_cols].apply(pd.to_numeric, errors="coerce")
+cars_df = pd.DataFrame(info, columns = ["car_info_id", "car", "driver", "lap_time", "power_weight",
+    "car_specs_id","Top speed", "Car type", "Curb weight", "Power", "Est. max acceleration",
+    "0 - 40 kph", "0 - 50 kph", "0 - 60 kph", "0 - 80 kph",
+    "0 - 100 kph", "0 - 120 kph", "0 - 130 kph", "0 - 140 kph"])
 
 st.title("GREEN HELL PREDICTOR")
 st.subheader("CAR SELECTOR")
 
 selected_car_name = st.selectbox("Select Car:", cars_df["car"].unique())
-
 cars_clean_df = cars_df.drop(columns=["car_info_id", "car_specs_id", "lap_time"])
-car_specs = cars_clean_df[cars_clean_df["car"] == selected_car_name].copy().head(1)
-
+car_specs = cars_clean_df[cars_clean_df["car"] == selected_car_name].copy()
+car_specs = car_specs.head(1)
 missing_features = car_specs.columns[car_specs.isnull().any()].tolist()
 
-# ----------------------------
-# CAR 1 PREDICTION
-# ----------------------------
-if len(missing_features) > 0:
 
-    prompt = f"""
-Return ONLY valid JSON.
+if missing_features:
+    prompt_missing_values = f"""
+    You are a machine that outputs ONLY valid JSON.
 
-Rules:
-- no text
-- no markdown
-- only JSON
+    RULES (HARD REQUIREMENTS):
+    - Output MUST be valid JSON
+    - NO markdown
+    - NO code blocks
+    - NO explanations
+    - NO extra text before or after
+    - If you violate this, the response is invalid
 
-Car:
-{car_specs.to_json()}
+    Return format:
+    {{
+    "feature_name": number
+    }}
 
-Missing:
-{missing_features}
-"""
+    All missing features must be filled with numeric predictions.
 
+    Car data:
+    {car_specs.to_json()}
+
+    Missing features:
+    {missing_features}
+    """
+ 
     response = client.chat.completions.create(
-        model="deepseek-ai/DeepSeek-V4-Pro",
-        messages=[
-            {"role": "system", "content": "Output ONLY JSON."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.2
-    )
+    model="deepseek-ai/DeepSeek-V4-Pro",
+    messages=[
+        {"role": "system", "content": "Return ONLY valid JSON. No extra text."},
+        {"role": "user", "content": prompt_missing_values}
+    ],
+    temperature=0.2
+)
 
+ 
     try:
-        predicted_values = safe_json_load(response.choices[0].message.content)
+        predicted_values = json.loads(response.choices[0].message.content)
 
-        car_specs = car_specs.astype(object)
 
         for feature, value in predicted_values.items():
-            try:
-                car_specs.at[car_specs.index[0], feature] = float(value)
-            except:
-                car_specs.at[car_specs.index[0], feature] = None
+            if isinstance(value, (int, float)):  # If it's already numeric, use it
+                    car_specs.at[car_specs.index[0], feature] = float(value)
+            elif isinstance(value, str) and value.strip().lower() == "nan":  # If the value is "nan" (string)
+                    car_specs.at[car_specs.index[0], feature] = None  # Or np.nan
+            else:
+                try:
+                    car_specs.at[car_specs.index[0], feature] = float(value)
+                except ValueError:
+                    car_specs.at[car_specs.index[0], feature] = None
+        
+    except json.JSONDecodeError:
+        st.error("Error: AI response is not in expected JSON format.")
 
-    except Exception as e:
-        st.error(f"Car 1 prediction error: {e}")
 
 st.write(car_specs)
 
-# ----------------------------
-# VIEW SELECTOR
-# ----------------------------
 st.sidebar.header("Performance Metrics")
 selected_view = st.sidebar.radio(
     "Select an option:",
     ["AI Prediction", "📊 Performance Analysis", "Car Comparisons"]
 )
 
-# ----------------------------
-# AI PREDICTION
-# ----------------------------
+
 if selected_view == "AI Prediction":
+    prompt_ai_prediction = f"""
+    Given the following specifications for the {selected_car_name}:  
+    {car_specs.to_json()}  
 
-    prompt_ai = f"""
-Predict Nürburgring performance for:
-
-{car_specs.to_json()}
-"""
+    Predict the Nürburgring lap time and other key performance characteristics of the car, excluding any historical lap times.
+    """
 
     response = client.chat.completions.create(
         model="deepseek-ai/DeepSeek-V4-Pro",
-        messages=[{"role": "user", "content": prompt_ai}]
+        messages=[{"role": "user", "content": prompt_ai_prediction}]
     )
 
-    st.write(response.choices[0].message.content)
+    ai_response = response.choices[0].message.content
+    st.write("### Car Details:")
+    st.write(ai_response)
 
-# ----------------------------
-# PERFORMANCE ANALYSIS
-# ----------------------------
-acceleration_features = [
-    '0 - 40 kph','0 - 50 kph','0 - 60 kph','0 - 80 kph',
-    '0 - 100 kph','0 - 120 kph','0 - 130 kph','0 - 140 kph'
-]
-
+acceleration_features = ['0 - 40 kph', '0 - 50 kph', '0 - 60 kph', '0 - 80 kph', '0 - 100 kph', '0 - 120 kph', '0 - 130 kph', '0 - 140 kph']
 car_specs_acceleration = car_specs[acceleration_features].dropna(axis=1)
-car_specs_long = car_specs_acceleration.transpose().reset_index()
-car_specs_long.columns = ['Speed', 'Time']
+
+car_specs_acceleration_long = car_specs_acceleration.transpose().reset_index()
+car_specs_acceleration_long.columns = ['Speed (kph)', 'Acceleration Time (seconds)']
+
+numeric_columns = ['Top speed', 'Curb weight', 'Power']
+performance_values = car_specs[numeric_columns].values.flatten()
+labels = numeric_columns
+streamlit_bg_color = st.get_option("theme.backgroundColor")
+
+
+acceleration_score = 1000 / car_specs[acceleration_features].sum(axis=1).values[0]
+curb_weight_score = car_specs['Curb weight'].values[0] / 100
+power_score = car_specs['Power'].values[0] / 100
+TopSpeed_score = car_specs['Top speed'].values[0] / 10
+
 
 if selected_view == "📊 Performance Analysis":
+    if not car_specs.empty:
+        fig = px.scatter_3d(
+        car_specs, 
+        x="Power", 
+        y="Curb weight", 
+        z="0 - 100 kph", 
+        color="car", 
+        size="power_weight",
+        hover_data=["car", "Top speed"],
+        title="3D Performance Comparison"
+        )
+        st.plotly_chart(fig)
 
-    fig = px.scatter_3d(
+        fig_speed_vs_power = px.scatter(
         car_specs,
         x="Power",
-        y="Curb weight",
-        z="0 - 100 kph",
-        color="car"
-    )
-    st.plotly_chart(fig)
+        y="0 - 100 kph",
+        color="car",
+        size="power_weight",
+        hover_data=["car", "Top speed"],
+        title=f"Power vs Speed for {selected_car_name}"
+        )
+        st.plotly_chart(fig_speed_vs_power)
 
-# ----------------------------
-# CAR COMPARISON
-# ----------------------------
-if selected_view == "Car Comparisons":
-
-    selected_car_name_1 = st.selectbox(
-        "Select Second Car:",
-        cars_df["car"].unique(),
-        key="car2"
-    )
-
-    car_specs_1 = cars_clean_df[cars_clean_df["car"] == selected_car_name_1].copy().head(1)
-
-    missing_features_1 = car_specs_1.columns[car_specs_1.isnull().any()].tolist()
-
-    # FIXED CONDITION
-    if len(missing_features_1) > 0:
-
-        prompt2 = f"""
-Return ONLY JSON.
-
-Car:
-{car_specs_1.to_json()}
-
-Missing:
-{missing_features_1}
-"""
-
-        response_1 = client.chat.completions.create(
-            model="deepseek-ai/DeepSeek-V4-Pro",
-            messages=[
-                {"role": "system", "content": "Output ONLY JSON."},
-                {"role": "user", "content": prompt2}
-            ],
-            temperature=0.2
+        fig3 = px.line(
+        car_specs_acceleration_long,
+        x='Speed (kph)', 
+        y='Acceleration Time (seconds)', 
+        title=f"Acceleration Time vs Speed for {selected_car_name}",
+        labels={'Speed (kph)': 'Speed (kph)', 'Acceleration Time (seconds)': 'Acceleration Time (seconds)'}
         )
 
-        try:
-            predicted_values_1 = safe_json_load(response_1.choices[0].message.content)
+        st.plotly_chart(fig3)
 
-            car_specs_1 = car_specs_1.astype(object)
+        fig_radar = px.line_polar(
+        r=performance_values,
+        theta=labels,
+        line_close=True,
+        title=f"Performance Radar Chart for {selected_car_name}"
+        )
+
+        fig_radar.update_layout(
+            polar=dict(
+            bgcolor="black",
+                radialaxis=dict(
+                    visible=True,
+                    color='white', 
+                    showticklabels=True,  
+                    tickfont=dict(color='white')  
+                ),
+                angularaxis=dict(
+                    visible=True,
+                    color='white',
+                    showticklabels=True,
+                    tickfont=dict(color='white') 
+                )
+            ),
+            plot_bgcolor=streamlit_bg_color,
+            paper_bgcolor=streamlit_bg_color,  
+            title_font=dict(color='white'), 
+            font=dict(color='white')  
+        )
+
+        fig_radar.update_traces(fillcolor=streamlit_bg_color)
+
+        st.plotly_chart(fig_radar)
+
+    else:
+        st.error("No data found for the selected car.")
+
+if selected_view == "Car Comparisons":
+
+    selected_car_name_1 = st.selectbox("Select Second Car:", cars_df["car"].unique(), key="car_selector_1")
+    car_specs_1 = cars_clean_df[cars_clean_df["car"] == selected_car_name_1].copy()
+    car_specs_1 = car_specs_1.head(1)
+    missing_features_1 = car_specs_1.columns[car_specs_1.isnull().any()].tolist()
+
+    if missing_features: 
+        prompt_missing_values_1 = f"""
+        You are a senior automotive analyst specializing in car performance and specifications.
+
+        **Task:** Predict the missing values (NaN) for the specified features using the provided car data.
+
+        **Instructions:**  
+        - You MUST return a **valid JSON object ONLY**, without any extra text, explanations, or formatting.
+        - The JSON must have:
+        - **Keys** = feature names  
+        - **Values** = predicted numbers (float or int).
+        - **You must fill EVERY missing feature with a predicted numerical value.**  
+        - **Do not return "nan" under any circumstances.**
+        - If information is insufficient, **make the best reasonable numerical estimate based on available data and general automotive knowledge.**
+        - **Do not add any extra text before or after the JSON.**  
+        - **Do not format output as markdown, code blocks, or natural language. Only raw JSON.**
+
+    **Available Car Data:**  
+    {car_specs_1.to_json()}
+
+    **Missing Features:**  
+    {missing_features_1}
+
+    **Strict Output Example:**
+    {{
+      "feature1": 123.4,
+      "feature2": 85.0,
+      "feature3": 567
+    }}
+    """
+ 
+        response_1 = client.chat.completions.create(
+            model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+            messages=[{"role": "user", "content": prompt_missing_values_1}]
+        )
+
+ 
+        try:
+            predicted_values_1 = json.loads(response_1.choices[0].message.content)
+
 
             for feature, value in predicted_values_1.items():
+                if isinstance(value, (int, float)):  # If it's already numeric, use it
+                    car_specs_1.at[car_specs_1.index[0], feature] = float(value)
+                elif isinstance(value, str) and value.strip().lower() == "nan":  # If the value is "nan" (string)
+                    car_specs_1.at[car_specs_1.index[0], feature] = None  # Or np.nan
+            else:
                 try:
                     car_specs_1.at[car_specs_1.index[0], feature] = float(value)
-                except:
+                except ValueError:
                     car_specs_1.at[car_specs_1.index[0], feature] = None
-
-        except Exception as e:
-            st.error(f"Car 2 prediction error: {e}")
+        
+        except json.JSONDecodeError:
+            st.error("Error: AI response is not in expected JSON format.")
 
     st.write(car_specs_1)
+
+    acceleration_score_1 = 1000 / car_specs_1[acceleration_features].sum(axis=1).values[0]
+    curb_weight_score_1 = car_specs_1['Curb weight'].values[0] / 100
+    power_score_1 = car_specs_1['Power'].values[0] / 100
+    TopSpeed_score_1 = car_specs_1['Top speed'].values[0] / 10
+
+
+    car_specs_score_01 = pd.DataFrame({
+        'Metric': ['acceleration score', 'curb weight score', 'power score', 'top speed score'],
+        'Score': [acceleration_score_1, curb_weight_score_1, power_score_1, TopSpeed_score_1],
+        'car': selected_car_name_1
+    })
+
+    car_specs_score_02 = pd.DataFrame({
+        'Metric': ['acceleration score', 'curb weight score', 'power score', 'top speed score'],
+        'Score': [acceleration_score, curb_weight_score, power_score, TopSpeed_score],
+        'car': selected_car_name
+    })
+
+    combined_scores = pd.concat([car_specs_score_01, car_specs_score_02], axis=0)
+
+    fig = px.bar(
+        combined_scores, 
+        x='Metric', 
+        y='Score', 
+        color='car',
+        barmode='group',
+        title="Car Comparison: Performance Scores"
+    )
+    st.plotly_chart(fig)
