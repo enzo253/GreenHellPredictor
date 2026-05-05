@@ -74,7 +74,7 @@ if missing_features:
     """
  
     response = client.chat.completions.create(
-            model="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+            model="meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             messages=[{"role": "user", "content": prompt_missing_values}]
         )
 
