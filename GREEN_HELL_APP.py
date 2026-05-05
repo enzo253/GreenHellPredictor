@@ -44,39 +44,38 @@ missing_features = car_specs.columns[car_specs.isnull().any()].tolist()
 
 if missing_features:
     prompt_missing_values = f"""
-    You are a senior automotive analyst specializing in car performance and specifications.
+    You are a machine that outputs ONLY valid JSON.
 
-    **Task:** Predict the missing values (NaN) for the specified features using the provided car data.
+    RULES (HARD REQUIREMENTS):
+    - Output MUST be valid JSON
+    - NO markdown
+    - NO code blocks
+    - NO explanations
+    - NO extra text before or after
+    - If you violate this, the response is invalid
 
-    **Instructions:**  
-    - You MUST return a **valid JSON object ONLY**, without any extra text, explanations, or formatting.
-    - The JSON must have:
-        - **Keys** = feature names  
-        - **Values** = predicted numbers (float or int).
-    - **You must fill EVERY missing feature with a predicted numerical value.**  
-    - **Do not return "nan" under any circumstances.**
-    - If information is insufficient, **make the best reasonable numerical estimate based on available data and general automotive knowledge.**
-    - **Do not add any extra text before or after the JSON.**  
-    - **Do not format output as markdown, code blocks, or natural language. Only raw JSON.**
+    Return format:
+    {{
+    "feature_name": number
+    }}
 
-    **Available Car Data:**  
+    All missing features must be filled with numeric predictions.
+
+    Car data:
     {car_specs.to_json()}
 
-    **Missing Features:**  
+    Missing features:
     {missing_features}
-
-    **Strict Output Example:**
-    {{
-      "feature1": 123.4,
-      "feature2": 85.0,
-      "feature3": 567
-    }}
     """
  
     response = client.chat.completions.create(
-            model="deepseek-ai/DeepSeek-V4-Pro",
-            messages=[{"role": "user", "content": prompt_missing_values}]
-        )
+    model="deepseek-ai/DeepSeek-V4-Pro",
+    messages=[
+        {"role": "system", "content": "Return ONLY valid JSON. No extra text."},
+        {"role": "user", "content": prompt_missing_values}
+    ],
+    temperature=0.2
+)
 
  
     try:
