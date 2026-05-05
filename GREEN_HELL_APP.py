@@ -74,12 +74,14 @@ if missing_features:
         {"role": "system", "content": "Return ONLY valid JSON. No extra text."},
         {"role": "user", "content": prompt_missing_values}
     ],
-    temperature=0.2
+    temperature=0.0,
+    max_tokens=500
 )
 
  
     try:
-        predicted_values = json.loads(response.choices[0].message.content)
+        raw = response.choices[0].message.content
+        predicted_values = extract_json(raw)
 
 
         for feature, value in predicted_values.items():
