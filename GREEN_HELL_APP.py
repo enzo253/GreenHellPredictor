@@ -47,44 +47,41 @@ if missing_features:
     prompt_missing_values = f"""
 You are a vehicle specification assistant.
 
-You MUST output a single valid JSON object.
+YOU MUST OUTPUT ONLY VALID JSON.
 
-ABSOLUTE OUTPUT RULES (NON-NEGOTIABLE):
-- Output ONLY raw JSON.
-- No explanations.
-- No markdown.
-- No extra text before or after JSON.
+ABSOLUTE RULES (HARD CONSTRAINTS):
+- Output ONLY raw JSON. Nothing else.
+- No explanations, no markdown, no text before or after.
 - Do NOT wrap output in code blocks.
 
-JSON FORMAT RULES:
-- Output must start with "{" and end with "}"
-- Keys must match the provided feature names exactly.
-- Values MUST ALWAYS be STRINGS.
-- Even numeric values must be returned as strings.
-  Example: "3.0" ✔ NOT 3.0 ✘
-- Do NOT output numbers (no integers, no floats).
-- Do NOT output null, NaN, or any non-string value.
+CRITICAL TYPE RULE (MOST IMPORTANT):
+- EVERY value MUST be a STRING.
+- This is mandatory.
+- Even if the value is numeric, it MUST be written as a string.
+  Example: "3.0"
+- DO NOT output numbers under any circumstance.
+  3, 3.0, 3.00, 3e0 are ALL FORBIDDEN.
 
-VALUE RULES:
-- Every value must be a string containing only the numeric value.
-- No units (no "km/h", "hp", etc.).
-- No words inside values.
+ENFORCEMENT RULE:
+Before responding, convert ALL values to strings.
+
+VALIDATION RULE:
+If any value is not enclosed in double quotes, the output is INVALID and must be corrected before returning.
+
+VALUE CONTENT RULES:
+- Strings must contain ONLY digits and decimal points.
+- No units, no words, no spaces.
+- Example valid values: "3", "3.0", "1020"
+- Example invalid values: "3 sec", "1020hp", 3.0
 
 BEHAVIOR:
-- Use exact known specifications when confident.
-- If unknown, make your best realistic estimate based on:
-    - same model generation
-    - similar vehicle class
-    - typical automotive ranges
-- Always provide a value for every field.
+- Use known specs when confident.
+- Otherwise estimate realistically based on similar vehicles.
+- Always fill all fields.
 
 CONSISTENCY RULES:
-- Keep all values physically realistic.
-- Ensure related specs are consistent (e.g. power, torque, acceleration).
-- Prefer conservative estimates over extreme values.
-
-FAIL-SAFE RULE:
-- If unsure, still output a best estimate (never leave empty fields).
+- Ensure values are physically realistic.
+- Keep engine/power/acceleration logically consistent.
 
     **Available Car Data:**  
     {car_specs.to_json()}
