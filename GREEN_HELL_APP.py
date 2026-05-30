@@ -60,7 +60,6 @@ if missing_features:
     - If you KNOW the exact specification of a car, return it exactly.
     - Do NOT modify known real-world values.
     - Do NOT guess or estimate missing values.
-    - Only include values you are fully confident are correct.
     - If a value is unknown or uncertain, return null.
 
     BEHAVIOR:
