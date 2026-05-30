@@ -192,7 +192,7 @@ model.fit(X, y)
 
 cars_df['expected_0_100'] = model.predict(X)
 
-# Negative = faster than expected
+
 cars_df['performance_delta'] = (
     cars_df['0 - 100 kph']
     - cars_df['expected_0_100']
