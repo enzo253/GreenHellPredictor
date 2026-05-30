@@ -145,42 +145,60 @@ curb_weight_score = car_specs['Curb weight'].values[0] / 100
 power_score = car_specs['Power'].values[0] / 100
 TopSpeed_score = car_specs['Top speed'].values[0] / 10
 
-X = car_specs[['power_weight']]
-y = car_specs['0 - 100 kph']
+X = car_df[['power_weight']]
+y = car_df['0 - 100 kph']
 
 model = LinearRegression()
 model.fit(X, y)
 
-car_specs['expected_0_100'] = model.predict(X)
+car_df['expected_0_100'] = model.predict(X)
 
 # Negative = faster than expected
-car_specs['performance_delta'] = (
-    car_specs['0 - 100 kph']
-    - car_specs['expected_0_100']
+car_df['performance_delta'] = (
+    car_df['0 - 100 kph']
+    - car_df['expected_0_100']
 )
 
 
 if selected_view == "📊 Performance Analysis":
     if not car_specs.empty:
         fig = px.scatter(
-        car_specs,
+        car_df,
         x='power_weight',
         y='0 - 100 kph',
         color='performance_delta',
         hover_data=[
-        'car',
-        'expected_0_100',
-        'performance_delta'
+            'car',
+            'expected_0_100',
+            'performance_delta'
         ],
         title='Acceleration Efficiency'
     )
 
+        regression_df = car_df.sort_values('power_weight')
+
         fig.add_scatter(
-        x=car_specs['power_weight'],
-        y=car_specs['expected_0_100'],
-        mode='lines',
-        name='Expected Performance'
-    )
+            x=regression_df['power_weight'],
+            y=regression_df['expected_0_100'],
+            mode='lines',
+            name='Expected Performance',
+            line=dict(color='white', width=3)
+        )
+
+        # Highlight selected car
+        selected_car_name = car_specs
+        
+        fig.add_scatter(
+            x=car_specs['power_weight'],
+            y=car_specs['0 - 100 kph'],
+            mode='markers',
+            name=selected_car_name,
+            marker=dict(
+                size=20,
+                color='red',
+                symbol='star'
+            )
+        )
 
         fig.update_yaxes(autorange='reversed')
 
