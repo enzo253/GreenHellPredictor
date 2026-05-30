@@ -144,6 +144,20 @@ curb_weight_score = car_specs['Curb weight'].values[0] / 100
 power_score = car_specs['Power'].values[0] / 100
 TopSpeed_score = car_specs['Top speed'].values[0] / 10
 
+X = car_specs[['power_weight']]
+y = car_specs['0 - 100 kph']
+
+model = LinearRegression()
+model.fit(X, y)
+
+car_specs['expected_0_100'] = model.predict(X)
+
+# Negative = faster than expected
+car_specs['performance_delta'] = (
+    car_specs['0 - 100 kph']
+    - car_specs['expected_0_100']
+)
+
 
 if selected_view == "📊 Performance Analysis":
     if not car_specs.empty:
@@ -151,11 +165,21 @@ if selected_view == "📊 Performance Analysis":
         car_specs,
         x='power_weight',
         y='0 - 100 kph',
-        color='car',
-        size='Top speed',
-        hover_data=['Power', 'Curb weight'],
-        title='Power-to-Weight vs 0-100 kph'
-)
+        color='performance_delta',
+        hover_data=[
+        'car',
+        'expected_0_100',
+        'performance_delta'
+        ],
+        title='Acceleration Efficiency'
+    )
+
+        fig.add_scatter(
+        x=car_specs['power_weight'],
+        y=car_specs['expected_0_100'],
+        mode='lines',
+        name='Expected Performance'
+    )
 
         fig.update_yaxes(autorange='reversed')
 
