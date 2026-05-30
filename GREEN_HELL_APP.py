@@ -60,9 +60,6 @@ if missing_features:
     - **Do not add any extra text before or after the JSON.**  
     - **Do not format output as markdown, code blocks, or natural language. Only raw JSON.**
 
-    **Available Car Data:**  
-    {car_specs.to_json()}
-
     **Missing Features:**  
     {missing_features}
 
