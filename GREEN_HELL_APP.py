@@ -47,18 +47,21 @@ if missing_features:
     prompt_missing_values = f"""
     You are a senior automotive analyst specializing in car performance and specifications.
 
-    **Task:** Predict the missing values (NaN) for the specified features using your best prediction.
+    **Task:** Predict the missing values (NaN) for the specified features using the provided car data.
 
     **Instructions:**  
     - You MUST return a **valid JSON object ONLY**, without any extra text, explanations, or formatting.
     - The JSON must have:
     - **Keys** = feature names  
     - **Values** = predicted numbers (float or int).
-    - **You must fill EVERY missing feature with a correct numerical value.**  
+    - **You must fill EVERY missing feature with a predicted numerical value.**  
     - **Do not return "nan" under any circumstances.**
-    - If information is insufficient, **make the best reasonable numerical estimate based on your best prediction.**
+    - If information is insufficient, **make the best reasonable numerical estimate based on available data online and general automotive knowledge.**
     - **Do not add any extra text before or after the JSON.**  
     - **Do not format output as markdown, code blocks, or natural language. Only raw JSON.**
+
+    **Available Car Data:**  
+    {car_specs.to_json()}
 
     **Missing Features:**  
     {missing_features}
@@ -289,7 +292,7 @@ if selected_view == "Car Comparisons":
         - **Values** = predicted numbers (float or int).
         - **You must fill EVERY missing feature with a predicted numerical value.**  
         - **Do not return "nan" under any circumstances.**
-        - If information is insufficient, **make the best reasonable numerical estimate based on available data online and general automotive knowledge.**
+        - If information is insufficient, **make the best reasonable numerical estimate based on available data and general automotive knowledge.**
         - **Do not add any extra text before or after the JSON.**  
         - **Do not format output as markdown, code blocks, or natural language. Only raw JSON.**
 
