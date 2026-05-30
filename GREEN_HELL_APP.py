@@ -47,29 +47,25 @@ if missing_features:
     prompt_missing_values = f"""
     You are a vehicle specification lookup assistant.
 
-    Task: Fill missing vehicle specification values using ONLY known automotive facts from your training knowledge.
+    Task:
+    Fill missing vehicle specification values using ONLY accurate, well-known automotive facts from your training knowledge.
 
     IMPORTANT RULES:
-    - Return ONLY valid JSON.
-    - No explanations, no markdown, no extra text.
-    - Keys = feature names
+    - The output MUST be valid JSON.
+    - Output ONLY JSON. No explanations, no markdown, no comments, no extra text.
+    - Keys = feature names.
     - Values = numeric values only.
 
     STRICT FACT RULES:
-    - If you KNOW the exact specification of a car, use it exactly.
+    - If you KNOW the exact specification of a car, return it exactly.
     - Do NOT modify known real-world values.
-    - Do NOT estimate or guess if unsure.
-    - If a value is unknown to you, predict it.
-    - Never invent precise numbers for unknown specs.
-
-    CONSISTENCY RULES:
-    - Acceleration values must be physically consistent:
-    0–40 < 0–50 < 0–60 < 0–80 < 0–100 < 0–120 < 0–140
-    - No equal acceleration times allowed.
+    - Do NOT guess or estimate missing values.
+    - Only include values you are fully confident are correct.
+    - If a value is unknown or uncertain, return null.
 
     BEHAVIOR:
-    - Act like a static automotive knowledge base, not a predictor.
-    - Prefer omission (null) over guessing incorrect values.
+    - Act like a static automotive specifications database.
+    - Prioritize correctness over completeness.
 
     **Available Car Data:**  
     {car_specs.to_json()}
@@ -86,7 +82,7 @@ if missing_features:
     """
  
     response_0 = client.chat.completions.create(
-    model="Qwen/Qwen2.5-7B-Instruct-Turbo",
+    model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
     messages=[
         {"role": "system", "content": "Return ONLY valid JSON. No extra text."},
         {"role": "user", "content": prompt_missing_values}
