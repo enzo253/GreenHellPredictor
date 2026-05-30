@@ -45,26 +45,35 @@ missing_features = car_specs.columns[car_specs.isnull().any()].tolist()
 
 if missing_features:
     prompt_missing_values = f"""
-    You are a vehicle specification lookup assistant.
+    You are a vehicle specification assistant.
 
     Task:
-    Fill missing vehicle specification values using ONLY accurate, well-known automotive facts from your training knowledge.
+    Fill missing vehicle specification values using the best available knowledge and reasonable automotive inference.
 
     IMPORTANT RULES:
-    - The output MUST be valid JSON.
-    - Output ONLY JSON. No explanations, no markdown, no comments, no extra text.
+    - Return ONLY valid JSON.
+    - No explanations, no markdown, no extra text.
     - Keys = feature names.
-    - Values = numeric values only.
-
-    STRICT FACT RULES:
-    - If you KNOW the exact specification of a car, return it exactly.
-    - Do NOT modify known real-world values.
-    - Do NOT guess or estimate missing values.
-    - If a value is unknown or uncertain, return null.
+    - Values = numeric only.
 
     BEHAVIOR:
-    - Act like a static automotive specifications database.
-    - Prioritize correctness over completeness.
+    - Use exact known specifications when you are confident they are correct.
+    - If a value is not known exactly, provide your best reasonable estimate based on:
+        - same model generation
+        - typical engine/class performance for similar vehicles
+        - standard industry ranges
+    - Do NOT leave values empty if a reasonable estimate can be made.
+    - Only use null if the feature is completely impossible to infer.
+
+    CONSISTENCY RULES:
+    - Keep all values physically realistic.
+    - Ensure related values are consistent (e.g., power, torque, acceleration).
+    - Prefer conservative estimates over extreme ones.
+
+    OUTPUT REQUIREMENTS:
+    - Must be valid JSON only.
+    - All values must be numeric.
+    - No strings, no units, no text.
 
     **Available Car Data:**  
     {car_specs.to_json()}
