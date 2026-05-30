@@ -203,7 +203,7 @@ if selected_view == "📊 Performance Analysis":
             name=selected_car_name,
             marker=dict(
                 size=18,
-                color='red',
+                color='green',
                 symbol='circle',
                 line=dict(
                     color='white',
