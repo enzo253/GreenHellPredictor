@@ -193,8 +193,8 @@ if selected_view == "📊 Performance Analysis":
             line=dict(color='white', width=3)
         )
 
-        # Highlight selected car
-        selected_car_name = car_specs
+        # ✅ FIX: get proper name string
+        selected_car_name = car_specs['car'].iloc[0]
 
         fig.add_scatter(
             x=car_specs['power_weight'],
@@ -210,13 +210,13 @@ if selected_view == "📊 Performance Analysis":
 
         fig.update_layout(
             legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+            )
         )
-    )
 
         fig.update_yaxes(autorange='reversed')
 
