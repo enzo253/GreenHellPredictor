@@ -45,9 +45,9 @@ missing_features = car_specs.columns[car_specs.isnull().any()].tolist()
 
 if missing_features:
     prompt_missing_values = f"""
-    You are a senior automotive performance analyst and vehicle dynamics expert.
+    You are a senior automotive performance analyst and vehicle specifications expert.
 
-    Task: Predict missing vehicle specification values using the provided dataset.
+    Task: Fill missing vehicle specification values using the provided dataset and known real-world automotive knowledge.
 
     IMPORTANT RULES:
     - Return ONLY valid JSON (no explanations, no markdown).
@@ -55,30 +55,33 @@ if missing_features:
     - Values = numeric predictions only (float or int).
     - NEVER return null, NaN, or text.
 
-    PHYSICS CONSTRAINTS:
-    - 0–100 km/h must be physically plausible based on power-to-weight ratio.
-    - Hypercars, EVs, and performance cars must NOT be treated as average vehicles.
-    - Acceleration times below 1.5s are extremely rare and only for extreme EV hypercars.
-    - Weight, power, and speed relationships must remain consistent.
+    🚨 PRIORITY RULES (VERY IMPORTANT):
 
-    🚨 ACCELERATION LOGIC (MANDATORY):
-    - Acceleration times MUST be strictly increasing:
+    1. FIRST PRIORITY — REAL-WORLD KNOWLEDGE MATCH:
+    - If a value is widely known for this car model (e.g., well-documented specs like 0–100, top speed, power), use that value.
+    - Do NOT modify or “recalculate” known manufacturer values.
+    - Treat known specs as ground truth.
+
+    2. SECOND PRIORITY — DATASET CONSISTENCY:
+    - If exact value is not known, use similar cars in the dataset (same class, power range, drivetrain).
+
+    3. LAST RESORT — ESTIMATION:
+    - Only estimate if no known or similar reference exists.
+    - Estimations must respect physics and automotive constraints.
+
+    PHYSICS CONSTRAINTS:
+    - 0–100 km/h must be consistent with known hypercar/EV/ICE behavior.
+    - Never produce identical acceleration values across different ranges.
+    - Acceleration times must always increase:
     0–40 < 0–50 < 0–60 < 0–80 < 0–100 < 0–120 < 0–140
 
-    - No two acceleration values can ever be equal.
-
-    - Acceleration curve must be smooth and physically realistic:
+    - Acceleration curve must be physically realistic:
     - 0–40 ≈ 30–40% of 0–100 time
-    - 0–60 ≈ 50–60% of 0–100 time
-    - 0–80 ≈ 70–80% of 0–100 time
-    - 0–120 and 0–140 must increase progressively
+    - 0–60 ≈ 50–60%
+    - 0–80 ≈ 70–80%
 
-    - If 0–100 is known or inferred, derive all other acceleration values from it.
-
-    MODEL GUIDELINES:
-    - Use relationships between power, weight, drivetrain behavior, and performance.
-    - Respect known automotive performance limits.
-    - Infer missing values using similar vehicles in dataset, not generic averages.
+    DATA USAGE RULE:
+    - If a value exists in the dataset (non-NaN), ALWAYS keep it unchanged.
 
     OUTPUT:
     Return only a valid JSON object.
