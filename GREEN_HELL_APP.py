@@ -204,7 +204,7 @@ if selected_view == "📊 Performance Analysis":
             x=regression_df['power_weight'],
             y=regression_df['expected_0_100'],
             mode='lines',
-            name='Expected Performance',
+            name='Average Performance',
             line=dict(color='white', width=3)
         )
 
