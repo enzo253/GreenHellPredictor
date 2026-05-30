@@ -50,35 +50,35 @@ if missing_features:
     Task: Fill missing vehicle specification values using the provided dataset and known real-world automotive knowledge.
 
     IMPORTANT RULES:
-    - Return ONLY valid JSON (no explanations, no markdown).
-    - Keys = feature names
-    - Values = numeric predictions only (float or int).
-    - NEVER return null, NaN, or text.
+        - Return ONLY valid JSON (no explanations, no markdown).
+        - Keys = feature names
+        - Values = numeric predictions only (float or int).
+        - NEVER return null, NaN, or text.
 
     🚨 PRIORITY RULES (VERY IMPORTANT):
 
     1. FIRST PRIORITY — REAL-WORLD KNOWLEDGE MATCH:
-    - If a value is widely known for this car model (e.g., well-documented specs like 0–100, top speed, power), use that value.
-    - Do NOT modify or “recalculate” known manufacturer values.
-    - Treat known specs as ground truth.
+        - If a value is widely known for this car model (e.g., well-documented specs like 0–100, top speed, power), use that value.
+        - Do NOT modify or “recalculate” known manufacturer values.
+        - Treat known specs as ground truth.
 
     2. SECOND PRIORITY — DATASET CONSISTENCY:
-    - If exact value is not known, use similar cars in the dataset (same class, power range, drivetrain).
+        - If exact value is not known, use similar cars in the dataset (same class, power range, drivetrain).
 
     3. LAST RESORT — ESTIMATION:
-    - Only estimate if no known or similar reference exists.
-    - Estimations must respect physics and automotive constraints.
+        - Only estimate if no known or similar reference exists.
+        - Estimations must respect physics and automotive constraints.
 
     PHYSICS CONSTRAINTS:
-    - 0–100 km/h must be consistent with known hypercar/EV/ICE behavior.
-    - Never produce identical acceleration values across different ranges.
-    - Acceleration times must always increase:
-    0–40 < 0–50 < 0–60 < 0–80 < 0–100 < 0–120 < 0–140
+        - 0–100 km/h must be consistent with known hypercar/EV/ICE behavior.
+        - Never produce identical acceleration values across different ranges.
+        - Acceleration times must always increase:
+        0–40 < 0–50 < 0–60 < 0–80 < 0–100 < 0–120 < 0–140
 
-    - Acceleration curve must be physically realistic:
-    - 0–40 ≈ 30–40% of 0–100 time
-    - 0–60 ≈ 50–60%
-    - 0–80 ≈ 70–80%
+        - Acceleration curve must be physically realistic:
+        - 0–40 ≈ 30–40% of 0–100 time
+        - 0–60 ≈ 50–60%
+        - 0–80 ≈ 70–80%
 
     DATA USAGE RULE:
     - If a value exists in the dataset (non-NaN), ALWAYS keep it unchanged.
