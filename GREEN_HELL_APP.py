@@ -58,13 +58,27 @@ if missing_features:
     PHYSICS CONSTRAINTS:
     - 0–100 km/h must be physically plausible based on power-to-weight ratio.
     - Hypercars, EVs, and performance cars must NOT be treated as average vehicles.
-    - Acceleration times below 1.5s are extremely rare and should only appear for extreme EV hypercars.
-    - Weight, power, and speed relationships must remain consistent (no contradictions).
+    - Acceleration times below 1.5s are extremely rare and only for extreme EV hypercars.
+    - Weight, power, and speed relationships must remain consistent.
 
-    MODELING GUIDELINES:
+    🚨 ACCELERATION LOGIC (MANDATORY):
+    - Acceleration times MUST be strictly increasing:
+    0–40 < 0–50 < 0–60 < 0–80 < 0–100 < 0–120 < 0–140
+
+    - No two acceleration values can ever be equal.
+
+    - Acceleration curve must be smooth and physically realistic:
+    - 0–40 ≈ 30–40% of 0–100 time
+    - 0–60 ≈ 50–60% of 0–100 time
+    - 0–80 ≈ 70–80% of 0–100 time
+    - 0–120 and 0–140 must increase progressively
+
+    - If 0–100 is known or inferred, derive all other acceleration values from it.
+
+    MODEL GUIDELINES:
     - Use relationships between power, weight, drivetrain behavior, and performance.
     - Respect known automotive performance limits.
-    - If data is missing, infer using similar vehicles in dataset rather than generic averages.
+    - Infer missing values using similar vehicles in dataset, not generic averages.
 
     OUTPUT:
     Return only a valid JSON object.
