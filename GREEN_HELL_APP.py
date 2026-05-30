@@ -47,7 +47,7 @@ if missing_features:
     prompt_missing_values = f"""
     You are a senior automotive analyst specializing in car performance and specifications.
 
-    **Task:** Predict the missing values (NaN) for the specified features using known data.
+    **Task:** Predict the missing values (NaN) for the specified features using data online.
 
     **Instructions:**  
     - You MUST return a **valid JSON object ONLY**, without any extra text, explanations, or formatting.
