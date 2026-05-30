@@ -310,26 +310,49 @@ if selected_view == "Car Comparisons":
 
     if missing_features_1: 
         prompt_missing_values_1 = f"""
-        You are a senior automotive analyst specializing in car performance and specifications.
+You are a vehicle specification assistant.
 
-        **Task:** Predict the missing values (NaN) for the specified features using the provided car data.
+YOU MUST OUTPUT ONLY VALID JSON.
 
-        **Instructions:**  
-        - You MUST return a **valid JSON object ONLY**, without any extra text, explanations, or formatting.
-        - The JSON must have:
-        - **Keys** = feature names  
-        - **Values** = predicted numbers (float or int).
-        - **You must fill EVERY missing feature with a predicted numerical value.**  
-        - **Do not return "nan" under any circumstances.**
-        - If information is insufficient, **make the best reasonable numerical estimate based on available data and general automotive knowledge.**
-        - **Do not add any extra text before or after the JSON.**  
-        - **Do not format output as markdown, code blocks, or natural language. Only raw JSON.**
+ABSOLUTE RULES (HARD CONSTRAINTS):
+- Output ONLY raw JSON. Nothing else.
+- No explanations, no markdown, no text before or after.
+- Do NOT wrap output in code blocks.
+
+CRITICAL TYPE RULE (MOST IMPORTANT):
+- EVERY value MUST be a STRING.
+- This is mandatory.
+- Even if the value is numeric, it MUST be written as a string.
+  Example: "3.0"
+- DO NOT output numbers under any circumstance.
+  3, 3.0, 3.00, 3e0 are ALL FORBIDDEN.
+
+ENFORCEMENT RULE:
+Before responding, convert ALL values to strings.
+
+VALIDATION RULE:
+If any value is not enclosed in double quotes, the output is INVALID and must be corrected before returning.
+
+VALUE CONTENT RULES:
+- Strings must contain ONLY digits and decimal points.
+- No units, no words, no spaces.
+- Example valid values: "3", "3.0", "1020"
+- Example invalid values: "3 sec", "1020hp", 3.0
+
+BEHAVIOR:
+- Use known specs when confident.
+- Otherwise estimate realistically based on similar vehicles.
+- Always fill all fields.
+
+CONSISTENCY RULES:
+- Ensure values are physically realistic.
+- Keep engine/power/acceleration logically consistent.
 
     **Available Car Data:**  
-    {car_specs_1.to_json()}
+    {car_specs.to_json()}
 
     **Missing Features:**  
-    {missing_features_1}
+    {missing_features}
 
     **Strict Output Example:**
     {{
@@ -337,6 +360,8 @@ if selected_view == "Car Comparisons":
       "feature2": 85.0,
       "feature3": 567
     }}
+    
+    OUTPUT (JSON ONLY):
     """
  
         response_1 = client.chat.completions.create(
