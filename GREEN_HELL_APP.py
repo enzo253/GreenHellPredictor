@@ -202,9 +202,13 @@ if selected_view == "📊 Performance Analysis":
             mode='markers',
             name=selected_car_name,
             marker=dict(
-                size=20,
+                size=18,
                 color='red',
-                symbol='star'
+                symbol='circle',
+                line=dict(
+                    color='white',
+                    width=3
+                )
             )
         )
 
