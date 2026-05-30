@@ -82,7 +82,7 @@ if missing_features:
     """
  
     response_0 = client.chat.completions.create(
-    model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+    model="meta-llama/Llama-3.3-70B-Instruct-Turbo",
     messages=[
         {"role": "system", "content": "Return ONLY valid JSON. No extra text."},
         {"role": "user", "content": prompt_missing_values}
