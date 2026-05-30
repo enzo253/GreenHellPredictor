@@ -145,7 +145,7 @@ curb_weight_score = car_specs['Curb weight'].values[0] / 100
 power_score = car_specs['Power'].values[0] / 100
 TopSpeed_score = car_specs['Top speed'].values[0] / 10
 
-cars_df['power_weight'] = car_df['power_weight'].fillna(
+cars_df['power_weight'] = cars_df['power_weight'].fillna(
     cars_df['power_weight'].median()
 )
 
