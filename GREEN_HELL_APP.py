@@ -147,28 +147,19 @@ TopSpeed_score = car_specs['Top speed'].values[0] / 10
 
 if selected_view == "📊 Performance Analysis":
     if not car_specs.empty:
-        fig = px.scatter_3d(
-        car_specs, 
-        x="Power", 
-        y="Curb weight", 
-        z="0 - 100 kph", 
-        color="car", 
-        size="power_weight",
-        hover_data=["car", "Top speed"],
-        title="3D Performance Comparison"
-        )
-        st.plotly_chart(fig)
-
-        fig_speed_vs_power = px.scatter(
+        fig = px.scatter(
         car_specs,
-        x="Power",
-        y="0 - 100 kph",
-        color="car",
-        size="power_weight",
-        hover_data=["car", "Top speed"],
-        title=f"Power vs Speed for {selected_car_name}"
-        )
-        st.plotly_chart(fig_speed_vs_power)
+        x='power_weight',
+        y='0 - 100 kph',
+        color='car',
+        size='Top speed',
+        hover_data=['Power', 'Curb weight'],
+        title='Power-to-Weight vs 0-100 kph'
+)
+
+        fig.update_yaxes(autorange='reversed')
+
+        st.plotly_chart(fig, use_container_width=True)
 
         fig3 = px.line(
         car_specs_acceleration_long,
