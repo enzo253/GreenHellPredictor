@@ -7,6 +7,7 @@ import requests
 from together import Together
 import plotly.express as px
 import json
+from sklearn.linear_model import LinearRegression
 
 load_dotenv()
 
