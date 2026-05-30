@@ -108,23 +108,19 @@ CONSISTENCY RULES:
     )
 
  
-    try:
-        predicted_values = json.loads(response_0.choices[0].message.content)
+try:
+    predicted_values = json.loads(response_0.choices[0].message.content)
 
+    for feature, value in predicted_values.items():
 
-        for feature, value in predicted_values.items():
-            if isinstance(value, (int, float)):  # If it's already numeric, use it
-                    car_specs.at[car_specs.index[0], feature] = float(value)
-            elif isinstance(value, str) and value.strip().lower() == "nan":  # If the value is "nan" (string)
-                    car_specs.at[car_specs.index[0], feature] = None  # Or np.nan
-            else:
-                try:
-                    car_specs.at[car_specs.index[0], feature] = float(value)
-                except ValueError:
-                    car_specs.at[car_specs.index[0], feature] = None
-        
-    except json.JSONDecodeError:
-        st.error("Error: AI response is not in expected JSON format.")
+        if value is None:
+            car_specs.at[car_specs.index[0], feature] = ""
+
+        else:
+            car_specs.at[car_specs.index[0], feature] = str(value)
+
+except json.JSONDecodeError:
+    st.error("Error: AI response is not in expected JSON format.")
 
 
 st.write(car_specs)
