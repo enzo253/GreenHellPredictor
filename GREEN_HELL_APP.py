@@ -54,7 +54,7 @@ if missing_features:
     - The JSON must have:
     - **Keys** = feature names  
     - **Values** = predicted numbers (float or int).
-    - **You must fill EVERY missing feature with a predicted numerical value.**  
+    - **You must fill EVERY missing feature with a correct numerical value.**  
     - **Do not return "nan" under any circumstances.**
     - If information is insufficient, **make the best reasonable numerical estimate based on available data online and general automotive knowledge.**
     - **Do not add any extra text before or after the JSON.**  
