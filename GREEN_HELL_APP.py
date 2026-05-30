@@ -145,18 +145,18 @@ curb_weight_score = car_specs['Curb weight'].values[0] / 100
 power_score = car_specs['Power'].values[0] / 100
 TopSpeed_score = car_specs['Top speed'].values[0] / 10
 
-X = car_df[['power_weight']]
-y = car_df['0 - 100 kph']
+X = cars_df[['power_weight']]
+y = cars_df['0 - 100 kph']
 
 model = LinearRegression()
 model.fit(X, y)
 
-car_df['expected_0_100'] = model.predict(X)
+cars_df['expected_0_100'] = model.predict(X)
 
 # Negative = faster than expected
-car_df['performance_delta'] = (
-    car_df['0 - 100 kph']
-    - car_df['expected_0_100']
+cars_df['performance_delta'] = (
+    cars_df['0 - 100 kph']
+    - cars_df['expected_0_100']
 )
 
 
