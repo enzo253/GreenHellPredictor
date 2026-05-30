@@ -46,7 +46,7 @@ missing_features = car_specs.columns[car_specs.isnull().any()].tolist()
 if missing_features:
     prompt_missing_values = f"""
     
-    your task is to to fill in the mising nan values with their correct values
+    your task is to to fill in the mising nan values with their correct values found online do not make guesses just find the data and fill it in it has to be correct
 
     **Available Car Data:**  
     {car_specs.to_json()}
