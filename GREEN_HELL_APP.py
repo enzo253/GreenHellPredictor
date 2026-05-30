@@ -149,6 +149,10 @@ cars_df['power_weight'] = cars_df['power_weight'].fillna(
     cars_df['power_weight'].median()
 )
 
+cars_df['0 - 100 kph'] = cars_df['0 - 100 kph'].fillna(
+    cars_df['0 - 100 kph'].median()
+)
+
 X = cars_df[['power_weight']]
 y = cars_df['0 - 100 kph']
 
