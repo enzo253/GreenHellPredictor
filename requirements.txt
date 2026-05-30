@@ -5,4 +5,4 @@ python-dotenv
 requests
 together
 plotly
-
+scikit-learn
