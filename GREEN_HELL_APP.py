@@ -69,6 +69,8 @@ if missing_features:
     - Keep all values physically realistic.
     - Ensure related values are consistent (e.g., power, torque, acceleration).
     - Prefer conservative estimates over extreme ones.
+    - All numeric values must be numbers (int or float), NOT strings.
+    Example: 2.0 ✔ NOT "2.0" ✘
 
     OUTPUT REQUIREMENTS:
     - Must be valid JSON only.
