@@ -163,7 +163,7 @@ car_df['performance_delta'] = (
 if selected_view == "📊 Performance Analysis":
     if not car_specs.empty:
         fig = px.scatter(
-        car_df,
+        cars_df,
         x='power_weight',
         y='0 - 100 kph',
         color='performance_delta',
@@ -175,7 +175,7 @@ if selected_view == "📊 Performance Analysis":
         title='Acceleration Efficiency'
     )
 
-        regression_df = car_df.sort_values('power_weight')
+        regression_df = cars_df.sort_values('power_weight')
 
         fig.add_scatter(
             x=regression_df['power_weight'],
@@ -187,7 +187,7 @@ if selected_view == "📊 Performance Analysis":
 
         # Highlight selected car
         selected_car_name = car_specs
-        
+
         fig.add_scatter(
             x=car_specs['power_weight'],
             y=car_specs['0 - 100 kph'],
