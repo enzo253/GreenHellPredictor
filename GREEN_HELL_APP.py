@@ -376,22 +376,22 @@ if selected_view == "Car Comparisons":
         )
 
         try:
-            predicted_values = json.loads(
+            predicted_values_1 = json.loads(
                 response_1.choices[0].message.content
             )
 
-            for feature, value in predicted_values.items():
+            for feature, value in predicted_values_1.items():
 
-                if feature not in car_specs.columns:
+                if feature not in car_specs_1.columns:
                     continue
 
                 dtype = car_specs_1[feature].dtype
 
                 try:
                     if str(dtype).startswith(("float", "int")):
-                        car_specs.at[car_specs_1.index[0], feature] = float(value)
+                        car_specs_1.at[car_specs_1.index[0], feature] = float(value)
                     else:
-                        car_specs.at[car_specs_1.index[0], feature] = str(value)
+                        car_specs_1.at[car_specs_1.index[0], feature] = str(value)
 
                 except (ValueError, TypeError):
                     pass
