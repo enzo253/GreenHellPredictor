@@ -311,43 +311,43 @@ if selected_view == "Car Comparisons":
 
     if missing_features_1: 
         prompt_missing_values_1 = f"""
-You are a vehicle specification assistant.
+    You are a vehicle specification assistant.
 
-YOU MUST OUTPUT ONLY VALID JSON.
+    YOU MUST OUTPUT ONLY VALID JSON.
 
-ABSOLUTE RULES (HARD CONSTRAINTS):
-- Output ONLY raw JSON. Nothing else.
-- No explanations, no markdown, no text before or after.
-- Do NOT wrap output in code blocks.
+    ABSOLUTE RULES (HARD CONSTRAINTS):
+    - Output ONLY raw JSON. Nothing else.
+    - No explanations, no markdown, no text before or after.
+    - Do NOT wrap output in code blocks.
 
-CRITICAL TYPE RULE (MOST IMPORTANT):
-- EVERY value MUST be a STRING.
-- This is mandatory.
-- Even if the value is numeric, it MUST be written as a string.
-  Example: "3.0"
-- DO NOT output numbers under any circumstance.
-  3, 3.0, 3.00, 3e0 are ALL FORBIDDEN.
+    CRITICAL TYPE RULE (MOST IMPORTANT):
+    - EVERY value MUST be a STRING.
+    - This is mandatory.
+    - Even if the value is numeric, it MUST be written as a string.
+    Example: "3.0"
+    - DO NOT output numbers under any circumstance.
+    3, 3.0, 3.00, 3e0 are ALL FORBIDDEN.
 
-ENFORCEMENT RULE:
-Before responding, convert ALL values to strings.
+    ENFORCEMENT RULE:
+    Before responding, convert ALL values to strings.
 
-VALIDATION RULE:
-If any value is not enclosed in double quotes, the output is INVALID and must be corrected before returning.
+    VALIDATION RULE:
+    If any value is not enclosed in double quotes, the output is INVALID and must be corrected before returning.
 
-VALUE CONTENT RULES:
-- Strings must contain ONLY digits and decimal points.
-- No units, no words, no spaces.
-- Example valid values: "3", "3.0", "1020"
-- Example invalid values: "3 sec", "1020hp", 3.0
+    VALUE CONTENT RULES:
+    - Strings must contain ONLY digits and decimal points.
+    - No units, no words, no spaces.
+    - Example valid values: "3", "3.0", "1020"
+    - Example invalid values: "3 sec", "1020hp", 3.0
 
-BEHAVIOR:
-- Use known specs when confident.
-- Otherwise estimate realistically based on similar vehicles.
-- Always fill all fields.
+    BEHAVIOR:
+    - Use known specs when confident.
+    - Otherwise estimate realistically based on similar vehicles.
+    - Always fill all fields.
 
-CONSISTENCY RULES:
-- Ensure values are physically realistic.
-- Keep engine/power/acceleration logically consistent.
+    CONSISTENCY RULES:
+    - Ensure values are physically realistic.
+    - Keep engine/power/acceleration logically consistent.
 
     **Available Car Data:**  
     {car_specs.to_json()}
@@ -365,29 +365,39 @@ CONSISTENCY RULES:
     OUTPUT (JSON ONLY):
     """
  
-        response_1 = client.chat.completions.create(
-            model="Qwen/Qwen2.5-7B-Instruct-Turbo",
-            messages=[{"role": "user", "content": prompt_missing_values_1}]
+    if missing_features:
+
+        response_0 = client.chat.completions.create(
+            model="meta-llama/Llama-3.3-70B-Instruct-Turbo",
+            messages=[
+                {"role": "system", "content": "Return ONLY valid JSON. No extra text."},
+                {"role": "user", "content": prompt_missing_values}
+            ],
         )
 
- 
         try:
-            predicted_values_1 = json.loads(response_1.choices[0].message.content)
+            predicted_values = json.loads(
+                response_0.choices[0].message.content
+            )
 
+            for feature, value in predicted_values.items():
 
-            for feature, value in predicted_values_1.items():
-                if isinstance(value, (int, float)):  # If it's already numeric, use it
-                    car_specs_1.at[car_specs_1.index[0], feature] = float(value)
-                elif isinstance(value, str) and value.strip().lower() == "nan":  # If the value is "nan" (string)
-                    car_specs_1.at[car_specs_1.index[0], feature] = None  # Or np.nan
-            else:
+                if feature not in car_specs.columns:
+                    continue
+
+                dtype = car_specs[feature].dtype
+
                 try:
-                    car_specs_1.at[car_specs_1.index[0], feature] = float(value)
-                except ValueError:
-                    car_specs_1.at[car_specs_1.index[0], feature] = None
-        
+                    if str(dtype).startswith(("float", "int")):
+                        car_specs.at[car_specs.index[0], feature] = float(value)
+                    else:
+                        car_specs.at[car_specs.index[0], feature] = str(value)
+
+                except (ValueError, TypeError):
+                    pass
+
         except json.JSONDecodeError:
-            st.error("Error: AI response is not in expected JSON format.")
+            st.error("Error: AI response is not valid JSON.")
 
     st.write(car_specs_1)
 
