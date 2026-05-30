@@ -59,7 +59,7 @@ if missing_features:
     - If you KNOW the exact specification of a car, use it exactly.
     - Do NOT modify known real-world values.
     - Do NOT estimate or guess if unsure.
-    - If a value is unknown to you, return null (not a number).
+    - If a value is unknown to you, predict it.
     - Never invent precise numbers for unknown specs.
 
     CONSISTENCY RULES:
@@ -70,7 +70,7 @@ if missing_features:
     BEHAVIOR:
     - Act like a static automotive knowledge base, not a predictor.
     - Prefer omission (null) over guessing incorrect values.
-    
+
     **Available Car Data:**  
     {car_specs.to_json()}
 
