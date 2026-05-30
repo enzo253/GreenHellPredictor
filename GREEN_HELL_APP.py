@@ -350,10 +350,10 @@ if selected_view == "Car Comparisons":
     - Keep engine/power/acceleration logically consistent.
 
     **Available Car Data:**  
-    {car_specs.to_json()}
+    {car_specs_1.to_json()}
 
     **Missing Features:**  
-    {missing_features}
+    {missing_features_1}
 
     **Strict Output Example:**
     {{
@@ -385,13 +385,13 @@ if selected_view == "Car Comparisons":
                 if feature not in car_specs.columns:
                     continue
 
-                dtype = car_specs[feature].dtype
+                dtype = car_specs_1[feature].dtype
 
                 try:
                     if str(dtype).startswith(("float", "int")):
-                        car_specs.at[car_specs.index[0], feature] = float(value)
+                        car_specs.at[car_specs_1.index[0], feature] = float(value)
                     else:
-                        car_specs.at[car_specs.index[0], feature] = str(value)
+                        car_specs.at[car_specs_1.index[0], feature] = str(value)
 
                 except (ValueError, TypeError):
                     pass
