@@ -224,7 +224,6 @@ if selected_view == "📊 Performance Analysis":
             line=dict(color='white', width=3)
         )
 
-        # ✅ FIX: get proper name string
         selected_car_name = car_specs['car'].iloc[0]
 
         fig.add_scatter(
