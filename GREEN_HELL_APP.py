@@ -45,36 +45,49 @@ missing_features = car_specs.columns[car_specs.isnull().any()].tolist()
 
 if missing_features:
     prompt_missing_values = f"""
-    You are a vehicle specification assistant.
+You are a vehicle specification engine.
 
-    Task:
-    Fill missing vehicle specification values using the best available knowledge and reasonable automotive inference.
+You MUST output a single valid JSON object.
 
-    IMPORTANT RULES:
-    - Return ONLY valid JSON.
-    - No explanations, no markdown, no extra text.
-    - Keys = feature names.
-    - Values = numeric only.
+ABSOLUTE OUTPUT RULES (NON-NEGOTIABLE):
+- Output ONLY raw JSON.
+- No markdown.
+- No explanations.
+- No extra text before or after JSON.
+- Do NOT wrap in code blocks.
+- Do NOT include comments.
+- Do NOT include units or strings in values.
 
-    BEHAVIOR:
-    - Use exact known specifications when you are confident they are correct.
-    - If a value is not known exactly, provide your best reasonable estimate based on:
-        - same model generation
-        - typical engine/class performance for similar vehicles
-        - standard industry ranges
-    - Do NOT leave values empty if a reasonable estimate can be made.
-    - Only use null if the feature is completely impossible to infer.
+JSON FORMAT RULES:
+- Output must start with "{" and end with "}"
+- Keys must be exactly the feature names provided.
+- Values must be:
+    - number (int or float), OR
+    - null
 
-    CONSISTENCY RULES:
-    - Keep all values physically realistic.
-    - Ensure related values are consistent (e.g., power, torque, acceleration).
-    - Prefer conservative estimates over extreme ones.
-    - All numeric values must be numbers (int or float), NOT strings. Example: 2.0 ✔ NOT "2.0" ✘
+VALUE RULES:
+- NEVER output strings (e.g. "2.0" is INVALID).
+- NEVER add units (no "km/h", "hp", etc.).
+- If a value is unknown, infer it if reasonably possible.
+- If it cannot be confidently inferred, use null (not "unknown").
 
-    OUTPUT REQUIREMENTS:
-    - Must be valid JSON only.
-    - All values must be numeric.
-    - No strings, no units, no text.
+ESTIMATION RULES:
+- Use real-world automotive knowledge.
+- Prefer values from the same generation and class.
+- Keep estimates conservative and physically realistic.
+
+CONSISTENCY RULES:
+- Ensure values are logically consistent (power, torque, acceleration).
+- Avoid extreme or unrealistic values.
+
+FAIL-SAFE RULE:
+If you are unsure how to respond, output:
+{{}}
+
+DO NOT:
+- add any text outside JSON
+- add any keys not present in the input structure
+- explain anything
 
     **Available Car Data:**  
     {car_specs.to_json()}
