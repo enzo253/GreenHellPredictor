@@ -108,20 +108,20 @@ CONSISTENCY RULES:
     )
 
  
-try:
-    predicted_values = json.loads(response_0.choices[0].message.content)
+for feature, value in predicted_values.items():
 
-    for feature, value in predicted_values.items():
+    if feature not in car_specs.columns:
+        continue
 
-        if value is None:
-            car_specs.at[car_specs.index[0], feature] = ""
+    dtype = car_specs[feature].dtype
 
+    try:
+        if str(dtype).startswith(("float", "int")):
+            car_specs.at[car_specs.index[0], feature] = float(value)
         else:
             car_specs.at[car_specs.index[0], feature] = str(value)
-
-except json.JSONDecodeError:
-    st.error("Error: AI response is not in expected JSON format.")
-
+    except Exception:
+        pass
 
 st.write(car_specs)
 
