@@ -200,13 +200,23 @@ if selected_view == "📊 Performance Analysis":
             x=car_specs['power_weight'],
             y=car_specs['0 - 100 kph'],
             mode='markers',
-            name=selected_car_name['car'].iloc[0],
+            name=selected_car_name,
             marker=dict(
                 size=20,
                 color='red',
                 symbol='star'
             )
         )
+
+        fig.update_layout(
+            legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        )
+    )
 
         fig.update_yaxes(autorange='reversed')
 
