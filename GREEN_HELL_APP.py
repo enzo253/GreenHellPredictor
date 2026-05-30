@@ -200,7 +200,7 @@ if selected_view == "📊 Performance Analysis":
             x=car_specs['power_weight'],
             y=car_specs['0 - 100 kph'],
             mode='markers',
-            name=selected_car_name,
+            name=selected_car_name['car'].iloc[0],
             marker=dict(
                 size=20,
                 color='red',
