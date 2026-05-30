@@ -45,28 +45,8 @@ missing_features = car_specs.columns[car_specs.isnull().any()].tolist()
 
 if missing_features:
     prompt_missing_values = f"""
-    You are a senior automotive performance analyst and vehicle specifications expert.
-
-    Task: Fill missing vehicle specification values using the provided dataset and known real-world automotive knowledge.
-
-    IMPORTANT RULES:
-        - Return ONLY valid JSON (no explanations, no markdown).
-        - Keys = feature names
-        - Values = numeric predictions only (float or int).
-        - NEVER return null, NaN, or text.
-
-    🚨 PRIORITY RULES (VERY IMPORTANT):
-
-    FIRST PRIORITY — REAL-WORLD KNOWLEDGE MATCH:
-        - If a value is widely known for this car model (e.g., well-documented specs like 0–100, top speed, power), use that value.
-        - Do NOT modify or “recalculate” known manufacturer values.
-        - Treat known specs as ground truth.
-
-    DATA USAGE RULE:
-    - If a value exists in the dataset (non-NaN), ALWAYS keep it unchanged.
-
-    OUTPUT:
-    Return only a valid JSON object.
+    
+    your task is to to fill in the mising nan values with their correct values
 
     **Available Car Data:**  
     {car_specs.to_json()}
