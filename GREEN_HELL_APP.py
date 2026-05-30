@@ -45,9 +45,32 @@ missing_features = car_specs.columns[car_specs.isnull().any()].tolist()
 
 if missing_features:
     prompt_missing_values = f"""
-    
-    your task is to to fill in the mising nan values with their correct values found online do not make guesses just find the data and fill it in it has to be correct
+    You are a vehicle specification lookup assistant.
 
+    Task: Fill missing vehicle specification values using ONLY known automotive facts from your training knowledge.
+
+    IMPORTANT RULES:
+    - Return ONLY valid JSON.
+    - No explanations, no markdown, no extra text.
+    - Keys = feature names
+    - Values = numeric values only.
+
+    STRICT FACT RULES:
+    - If you KNOW the exact specification of a car, use it exactly.
+    - Do NOT modify known real-world values.
+    - Do NOT estimate or guess if unsure.
+    - If a value is unknown to you, return null (not a number).
+    - Never invent precise numbers for unknown specs.
+
+    CONSISTENCY RULES:
+    - Acceleration values must be physically consistent:
+    0–40 < 0–50 < 0–60 < 0–80 < 0–100 < 0–120 < 0–140
+    - No equal acceleration times allowed.
+
+    BEHAVIOR:
+    - Act like a static automotive knowledge base, not a predictor.
+    - Prefer omission (null) over guessing incorrect values.
+    
     **Available Car Data:**  
     {car_specs.to_json()}
 
