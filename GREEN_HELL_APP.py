@@ -367,17 +367,17 @@ if selected_view == "Car Comparisons":
  
     if missing_features:
 
-        response_0 = client.chat.completions.create(
+        response_1 = client.chat.completions.create(
             model="meta-llama/Llama-3.3-70B-Instruct-Turbo",
             messages=[
                 {"role": "system", "content": "Return ONLY valid JSON. No extra text."},
-                {"role": "user", "content": prompt_missing_values}
+                {"role": "user", "content": prompt_missing_values_1}
             ],
         )
 
         try:
             predicted_values = json.loads(
-                response_0.choices[0].message.content
+                response_1.choices[0].message.content
             )
 
             for feature, value in predicted_values.items():
