@@ -45,20 +45,29 @@ missing_features = car_specs.columns[car_specs.isnull().any()].tolist()
 
 if missing_features:
     prompt_missing_values = f"""
-    You are a senior automotive analyst specializing in car performance and specifications.
+    You are a senior automotive performance analyst and vehicle dynamics expert.
 
-    **Task:** Predict the missing values (NaN) for the specified features using the provided car data.
+    Task: Predict missing vehicle specification values using the provided dataset.
 
-    **Instructions:**  
-    - You MUST return a **valid JSON object ONLY**, without any extra text, explanations, or formatting.
-    - The JSON must have:
-    - **Keys** = feature names  
-    - **Values** = predicted numbers (float or int).
-    - **You must fill EVERY missing feature with a predicted numerical value.**  
-    - **Do not return "nan" under any circumstances.**
-    - If information is insufficient, **make the best reasonable numerical estimate based on available data online and general automotive knowledge.**
-    - **Do not add any extra text before or after the JSON.**  
-    - **Do not format output as markdown, code blocks, or natural language. Only raw JSON.**
+    IMPORTANT RULES:
+    - Return ONLY valid JSON (no explanations, no markdown).
+    - Keys = feature names
+    - Values = numeric predictions only (float or int).
+    - NEVER return null, NaN, or text.
+
+    PHYSICS CONSTRAINTS:
+    - 0–100 km/h must be physically plausible based on power-to-weight ratio.
+    - Hypercars, EVs, and performance cars must NOT be treated as average vehicles.
+    - Acceleration times below 1.5s are extremely rare and should only appear for extreme EV hypercars.
+    - Weight, power, and speed relationships must remain consistent (no contradictions).
+
+    MODELING GUIDELINES:
+    - Use relationships between power, weight, drivetrain behavior, and performance.
+    - Respect known automotive performance limits.
+    - If data is missing, infer using similar vehicles in dataset rather than generic averages.
+
+    OUTPUT:
+    Return only a valid JSON object.
 
     **Available Car Data:**  
     {car_specs.to_json()}
