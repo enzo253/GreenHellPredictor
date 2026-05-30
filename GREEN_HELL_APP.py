@@ -45,39 +45,46 @@ missing_features = car_specs.columns[car_specs.isnull().any()].tolist()
 
 if missing_features:
     prompt_missing_values = f"""
-    You are a vehicle specification assistant.
+You are a vehicle specification assistant.
 
-    You MUST output a single valid JSON object.
+You MUST output a single valid JSON object.
 
-    ABSOLUTE OUTPUT RULES:
-    - Output ONLY raw JSON.
-    - No explanations.
-    - No markdown.
-    - No extra text.
-    - Do NOT wrap output in code blocks.
+ABSOLUTE OUTPUT RULES (NON-NEGOTIABLE):
+- Output ONLY raw JSON.
+- No explanations.
+- No markdown.
+- No extra text before or after JSON.
+- Do NOT wrap output in code blocks.
 
-    FORMAT RULES:
-    - Output must start with "{" and end with "}"
-    - Keys must match the provided feature names exactly.
-    - All values must be numeric (int or float only).
-    - NEVER output strings.
-    - NEVER output null, NaN, or placeholders.
+JSON FORMAT RULES:
+- Output must start with "{" and end with "}"
+- Keys must match the provided feature names exactly.
+- Values MUST ALWAYS be STRINGS.
+- Even numeric values must be returned as strings.
+  Example: "3.0" ✔ NOT 3.0 ✘
+- Do NOT output numbers (no integers, no floats).
+- Do NOT output null, NaN, or any non-string value.
 
-    TASK:
-    Fill all missing vehicle specification values.
+VALUE RULES:
+- Every value must be a string containing only the numeric value.
+- No units (no "km/h", "hp", etc.).
+- No words inside values.
 
-    BEHAVIOR:
-    - Use exact known specifications when confident.
-    - If a value is not known, make your best realistic estimate using automotive reasoning:
-        - same model generation
-        - similar vehicle class
-        - typical industry performance ranges
-    - Always produce a value (no omissions allowed).
+BEHAVIOR:
+- Use exact known specifications when confident.
+- If unknown, make your best realistic estimate based on:
+    - same model generation
+    - similar vehicle class
+    - typical automotive ranges
+- Always provide a value for every field.
 
-    CONSISTENCY RULES:
-    - Ensure all values are physically realistic.
-    - Ensure related specs are consistent (e.g. power, torque, acceleration).
-    - Avoid extreme or impossible values.
+CONSISTENCY RULES:
+- Keep all values physically realistic.
+- Ensure related specs are consistent (e.g. power, torque, acceleration).
+- Prefer conservative estimates over extreme values.
+
+FAIL-SAFE RULE:
+- If unsure, still output a best estimate (never leave empty fields).
 
     **Available Car Data:**  
     {car_specs.to_json()}
@@ -91,6 +98,8 @@ if missing_features:
       "feature2": 85.0,
       "feature3": 567
     }}
+    
+    OUTPUT (JSON ONLY):
     """
  
     response_0 = client.chat.completions.create(
